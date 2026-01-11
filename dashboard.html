@@ -93,7 +93,7 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
 .btn-create { background: var(--blue); color: white; }
 .btn-cancel { background: #4b5563; color: white; }
 
-/* ALWAYS VISIBLE CARD - Never gets locked */
+/* ALWAYS VISIBLE CARD */
 .always-visible {
   filter: none !important;
   opacity: 1 !important;
@@ -127,7 +127,6 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
   padding-right: 5px;
 }
 
-/* Scrollbar styling */
 #subdomainsList::-webkit-scrollbar {
   width: 5px;
 }
@@ -152,7 +151,6 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
   margin: 5px 0;
 }
 
-/* Quick Actions */
 .quick-actions {
   display: flex;
   gap: 10px;
@@ -178,6 +176,19 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
   background: #ef4444;
   color: white;
 }
+
+#notification {
+  position:fixed; 
+  top:20px; 
+  right:20px; 
+  background:#10b981; 
+  color:white; 
+  padding:15px 20px; 
+  border-radius:10px; 
+  display:none; 
+  z-index:9999; 
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+}
 </style>
 </head>
 <body>
@@ -186,7 +197,7 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
   <div class="plan-badge" id="badge">BASIC</div>
 </header>
 <section class="dashboard" id="dash">
-  <!-- Feature Cards (these get locked based on plan) -->
+  <!-- Feature Cards -->
   <div class="card locked" data-feature="attendance"><h3>Attendance</h3><p>Daily attendance</p></div>
   <div class="card locked" data-feature="students"><h3>Students</h3><p>Student database</p></div>
   <div class="card locked" data-feature="reports"><h3>Reports</h3><p>Monthly reports</p></div>
@@ -196,7 +207,7 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
   <div class="card locked" data-feature="teachers"><h3>Teachers</h3><p>Multi teacher</p></div>
   <div class="card locked" data-feature="settings"><h3>Settings</h3><p>Profile & school</p></div>
   
-  <!-- ALWAYS VISIBLE CARD - Manage Subdomains with History -->
+  <!-- ALWAYS VISIBLE CARD -->
   <div class="card always-visible">
     <div class="history-header">
       <h3>📁 Manage Subdomains</h3>
@@ -204,17 +215,11 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
     </div>
     <p>Create teacher/student/public pages</p>
     
-    <!-- Quick Actions -->
     <div class="quick-actions">
-      <button onclick="loadSubdomains()" class="action-btn refresh-btn">
-        🔄 Refresh List
-      </button>
-      <button onclick="deleteAllSubdomains()" class="action-btn delete-all-btn">
-        🗑️ Delete All
-      </button>
+      <button onclick="loadSubdomains()" class="action-btn refresh-btn">🔄 Refresh List</button>
+      <button onclick="deleteAllSubdomains()" class="action-btn delete-all-btn">🗑️ Delete All</button>
     </div>
     
-    <!-- Subdomains History List -->
     <div id="subdomainsList">
       <div class="empty-state">
         <p>⏳ Loading subdomains...</p>
@@ -267,45 +272,68 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
 </div>
 
 <!-- Success Notification -->
-<div id="notification" style="position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 20px; border-radius:10px; display:none; z-index:9999; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
-  ✅ Subdomain created successfully!
-</div>
+<div id="notification">✅ Subdomain created successfully!</div>
 
 <script>
-// Dynamic values injected from server
+// THESE VALUES WILL BE INJECTED BY SERVER
 let PLAN = "BASIC";
 let SCHOOL_NAME = "School";
 let MAIN_DOMAIN = "";
-const BASE_URL = window.location.origin; // Get current domain dynamically
+const BASE_URL = window.location.origin;
+
+// Debug log
+console.log("🚀 Dashboard loaded with:", { 
+  PLAN, 
+  SCHOOL_NAME, 
+  MAIN_DOMAIN, 
+  BASE_URL,
+  path: window.location.pathname 
+});
+
+// Extract domain from URL if MAIN_DOMAIN is empty
+if (!MAIN_DOMAIN && window.location.pathname.startsWith('/dashboard/')) {
+  const pathParts = window.location.pathname.split('/');
+  if (pathParts.length > 2) {
+    MAIN_DOMAIN = pathParts[2];
+    console.log("📌 Extracted MAIN_DOMAIN from URL:", MAIN_DOMAIN);
+  }
+}
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("Dashboard loaded. MAIN_DOMAIN:", MAIN_DOMAIN, "BASE_URL:", BASE_URL);
+  console.log("📊 Dashboard initialized. MAIN_DOMAIN:", MAIN_DOMAIN);
   
   // Apply plan settings
   applyPlan();
   
-  // IMMEDIATELY load subdomains
+  // Load subdomains after a short delay
   setTimeout(() => {
-    loadSubdomains();
-  }, 100);
-  
-  // Also load after 1 second to ensure data is loaded
-  setTimeout(() => {
-    loadSubdomains();
-  }, 1000);
+    if (MAIN_DOMAIN && MAIN_DOMAIN !== "") {
+      loadSubdomains();
+    } else {
+      console.error("❌ MAIN_DOMAIN still empty!");
+      document.getElementById("subdomainCount").textContent = "No Domain";
+      document.getElementById("subdomainsList").innerHTML = `
+        <div class="empty-state">
+          <p>⚠️ Domain not set</p>
+          <p style="font-size: 12px;">URL: ${window.location.pathname}</p>
+          <button onclick="location.reload()" style="margin-top:10px; padding:8px 15px; background:#3b82f6; color:white; border:none; border-radius:5px;">
+            🔄 Refresh Page
+          </button>
+        </div>
+      `;
+    }
+  }, 500);
 });
 
 function applyPlan(){
   document.getElementById("badge").innerText = PLAN.toUpperCase();
   document.getElementById("school-name").innerText = `🏫 ${SCHOOL_NAME} Dashboard`;
   
-  // ONLY lock feature cards (not the Manage Subdomains card)
   document.querySelectorAll('.card[data-feature]').forEach(card => {
     card.classList.add("locked");
   });
   
-  // Plan ke hisab se unlock karein
   if(PLAN === "intermediate") {
     unlock(["attendance","reports"]);
   }
@@ -335,7 +363,6 @@ function openSubdomainModal(){
 
 function closeSubdomainModal(){
   document.getElementById("subdomainModal").style.display = "none";
-  // Clear form
   document.getElementById("subdomainName").value = "";
   document.getElementById("displayName").value = "";
   document.getElementById("subdomainDesc").value = "";
@@ -345,10 +372,9 @@ function fakePay(p){
   PLAN = p;
   document.getElementById("planModal").style.display = "none";
   applyPlan();
-  alert(`Plan upgraded to ${p.toUpperCase()}! Now you can access more features.`);
+  alert(`Plan upgraded to ${p.toUpperCase()}!`);
 }
 
-// Show notification
 function showNotification(message, type = "success") {
   const notification = document.getElementById("notification");
   notification.textContent = message;
@@ -373,13 +399,12 @@ function createSubdomain() {
   }
   
   if (!MAIN_DOMAIN) {
-    showNotification("❌ Main domain not found. Please refresh the page.", "error");
+    showNotification("❌ Main domain not found", "error");
     return;
   }
   
-  // Validate subdomain format
   if (!/^[a-zA-Z0-9]+$/.test(subdomain)) {
-    showNotification("❌ Subdomain can only contain letters and numbers (no spaces or special characters)", "error");
+    showNotification("❌ Only letters and numbers allowed", "error");
     return;
   }
   
@@ -400,112 +425,67 @@ function createSubdomain() {
       showNotification("❌ Error: " + data.error, "error");
     } else {
       showNotification(`✅ ${data.message}`, "success");
-      
       closeSubdomainModal();
-      
-      // Force reload subdomains list
-      setTimeout(() => {
-        loadSubdomains();
-      }, 500);
-      
-      // Automatically open the new link in a new tab
+      setTimeout(() => loadSubdomains(), 500);
       if (data.accessLink) {
-        setTimeout(() => {
-          window.open(data.accessLink, '_blank');
-        }, 1000);
+        setTimeout(() => window.open(data.accessLink, '_blank'), 1000);
       }
     }
   })
   .catch(error => {
     console.error("Error:", error);
-    showNotification("❌ Network error. Please try again.", "error");
+    showNotification("❌ Network error", "error");
   });
 }
 
-// MAIN FUNCTION - Load subdomains history
 function loadSubdomains() {
-  console.log("loadSubdomains called. MAIN_DOMAIN:", MAIN_DOMAIN, "BASE_URL:", BASE_URL);
+  console.log("📡 Loading subdomains for:", MAIN_DOMAIN);
   
-  if (!MAIN_DOMAIN || MAIN_DOMAIN === "") {
+  if (!MAIN_DOMAIN) {
     console.error("MAIN_DOMAIN is empty!");
-    document.getElementById("subdomainCount").textContent = "No Domain";
-    document.getElementById("subdomainsList").innerHTML = `
-      <div class="empty-state">
-        <p>⚠️ Domain not set</p>
-        <p style="font-size: 12px;">Please refresh the dashboard</p>
-      </div>
-    `;
     return;
   }
   
-  // Show loading state
   document.getElementById("subdomainCount").textContent = "Loading...";
   document.getElementById("subdomainsList").innerHTML = `
     <div class="empty-state">
-      <p>⏳ Loading subdomains...</p>
+      <p>⏳ Loading...</p>
     </div>
   `;
   
   fetch(`/get-subdomains/${MAIN_DOMAIN}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
-      console.log("Subdomains data received:", data);
-      
-      const list = document.getElementById("subdomainsList");
-      const countElement = document.getElementById("subdomainCount");
+      console.log("📦 Subdomains data:", data);
       
       if (data.error || !data.success) {
-        console.log("No subdomains found or error:", data.error);
-        list.innerHTML = `
+        document.getElementById("subdomainsList").innerHTML = `
           <div class="empty-state">
-            <p>📭 No subdomains created yet</p>
-            <p style="font-size: 12px;">Create your first subdomain below</p>
+            <p>📭 No subdomains found</p>
           </div>
         `;
-        countElement.textContent = "0 Created";
+        document.getElementById("subdomainCount").textContent = "0";
         return;
       }
       
-      if (!data.subdomains || data.subdomains.length === 0) {
-        list.innerHTML = `
+      document.getElementById("subdomainCount").textContent = `${data.subdomains.length} Created`;
+      
+      if (data.subdomains.length === 0) {
+        document.getElementById("subdomainsList").innerHTML = `
           <div class="empty-state">
             <p>📭 No subdomains created yet</p>
-            <p style="font-size: 12px;">Create your first subdomain below</p>
           </div>
         `;
-        countElement.textContent = "0 Created";
         return;
       }
-      
-      // Update count
-      countElement.textContent = `${data.subdomains.length} Created`;
-      
-      // Sort by creation date (newest first)
-      const sortedSubdomains = data.subdomains.sort((a, b) => 
-        new Date(b.createdAt) - new Date(a.createdAt)
-      );
       
       let html = "";
-      sortedSubdomains.forEach((sub, index) => {
+      data.subdomains.forEach((sub, index) => {
         const badgeClass = `${sub.type}-badge`;
         const badgeText = sub.type.charAt(0).toUpperCase() + sub.type.slice(1);
         const fullUrl = `${BASE_URL}/${MAIN_DOMAIN}/${sub.subdomain}`;
-        const createdDate = new Date(sub.createdAt).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric'
-        });
-        const createdTime = new Date(sub.createdAt).toLocaleTimeString('en-IN', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        const createdDate = new Date(sub.createdAt).toLocaleDateString();
         
-        // Get icon based on type
         let icon = "👤";
         if (sub.type === 'teacher') icon = "👨‍🏫";
         if (sub.type === 'student') icon = "👨‍🎓";
@@ -517,90 +497,46 @@ function loadSubdomains() {
               <div>
                 <span class="subdomain-badge ${badgeClass}">${badgeText}</span>
                 <strong>${icon} ${sub.name}</strong>
-                <span style="margin-left: 8px; font-size: 11px; color: #9ca3af;">#${index + 1}</span>
               </div>
-              <small style="color:#6b7280; font-size: 11px;">${createdDate}</small>
+              <small style="color:#6b7280;">${createdDate}</small>
             </div>
-            
-            ${sub.description ? `
-            <div style="margin: 8px 0; color: #9ca3af; font-size: 13px;">
-              📝 ${sub.description}
-            </div>
-            ` : ''}
-            
             <a href="${fullUrl}" target="_blank" class="subdomain-link">
               🔗 ${MAIN_DOMAIN}/${sub.subdomain}
-              <span style="float: right; font-weight: normal; font-size: 12px;">
-                ${createdTime}
-              </span>
             </a>
-            
             <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-              <small style="color:#6b7280;">
-                🆔 ${sub.subdomain}
-              </small>
-              <div>
-                <button onclick="copyLink('${fullUrl}', event)" style="background: none; border: 1px solid var(--border); color: var(--blue); padding: 3px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; margin-right: 5px;">
-                  📋 Copy
-                </button>
-                <button onclick="deleteSubdomain('${sub.subdomain}', '${sub.name}')" style="background: none; border: 1px solid #ef4444; color: #ef4444; padding: 3px 10px; border-radius: 5px; font-size: 11px; cursor: pointer;">
-                  🗑️ Delete
-                </button>
-              </div>
+              <small style="color:#6b7280;">${sub.subdomain}</small>
+              <button onclick="deleteSubdomain('${sub.subdomain}', '${sub.name}')" style="background:none; border:1px solid #ef4444; color:#ef4444; padding:3px 10px; border-radius:5px; font-size:11px; cursor:pointer;">
+                🗑️ Delete
+              </button>
             </div>
           </div>
         `;
       });
-      list.innerHTML = html;
-      
-      // Show success message if just created
-      console.log(`✅ Loaded ${data.subdomains.length} subdomains`);
+      document.getElementById("subdomainsList").innerHTML = html;
     })
     .catch(error => {
       console.error("Error loading subdomains:", error);
       document.getElementById("subdomainsList").innerHTML = `
         <div class="empty-state">
-          <p>❌ Error loading subdomains</p>
-          <p style="font-size: 12px;">Please refresh the page</p>
+          <p>❌ Error loading</p>
         </div>
       `;
       document.getElementById("subdomainCount").textContent = "Error";
     });
 }
 
-// Copy link to clipboard
 function copyLink(url, event) {
   navigator.clipboard.writeText(url)
     .then(() => {
-      // Show temporary success message
       const button = event.target;
-      const originalText = button.textContent;
       button.textContent = "✅ Copied!";
-      button.style.color = "#10b981";
-      button.style.borderColor = "#10b981";
-      
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.style.color = "var(--blue)";
-        button.style.borderColor = "var(--border)";
-      }, 2000);
+      setTimeout(() => button.textContent = "📋 Copy", 2000);
     })
-    .catch(err => {
-      console.error('Failed to copy: ', err);
-      alert("Failed to copy link");
-    });
+    .catch(err => console.error('Copy failed:', err));
 }
 
-// Delete subdomain
 function deleteSubdomain(subdomainName, displayName) {
-  if (!confirm(`Are you sure you want to delete "${displayName}" (${subdomainName})?`)) {
-    return;
-  }
-  
-  if (!MAIN_DOMAIN) {
-    showNotification("❌ Main domain not found", "error");
-    return;
-  }
+  if (!confirm(`Delete "${displayName}"?`)) return;
   
   fetch(`/delete-subdomain/${MAIN_DOMAIN}/${subdomainName}`, {
     method: 'DELETE'
@@ -608,10 +544,10 @@ function deleteSubdomain(subdomainName, displayName) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      showNotification(`✅ Deleted "${displayName}" successfully`, "success");
-      loadSubdomains(); // Reload the list
+      showNotification("✅ Deleted successfully", "success");
+      loadSubdomains();
     } else {
-      showNotification(`❌ Error: ${data.error}`, "error");
+      showNotification("❌ Error: " + data.error, "error");
     }
   })
   .catch(error => {
@@ -620,16 +556,8 @@ function deleteSubdomain(subdomainName, displayName) {
   });
 }
 
-// Delete all subdomains
 function deleteAllSubdomains() {
-  if (!confirm("Are you sure you want to delete ALL subdomains? This cannot be undone!")) {
-    return;
-  }
-  
-  if (!MAIN_DOMAIN) {
-    showNotification("❌ Main domain not found", "error");
-    return;
-  }
+  if (!confirm("Delete ALL subdomains?")) return;
   
   fetch(`/delete-all-subdomains/${MAIN_DOMAIN}`, {
     method: 'DELETE'
@@ -637,10 +565,10 @@ function deleteAllSubdomains() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      showNotification(`✅ Deleted all subdomains successfully`, "success");
-      loadSubdomains(); // Reload the list
+      showNotification("✅ All deleted", "success");
+      loadSubdomains();
     } else {
-      showNotification(`❌ Error: ${data.error}`, "error");
+      showNotification("❌ Error: " + data.error, "error");
     }
   })
   .catch(error => {
@@ -649,19 +577,9 @@ function deleteAllSubdomains() {
   });
 }
 
-// Auto-refresh subdomains list every 5 seconds
-setInterval(() => {
-  if (MAIN_DOMAIN && MAIN_DOMAIN !== "") {
-    loadSubdomains();
-  }
-}, 5000);
-
 // Make functions global
 window.openSubdomainModal = openSubdomainModal;
 window.createSubdomain = createSubdomain;
-window.copyLink = copyLink;
-window.deleteSubdomain = deleteSubdomain;
-window.deleteAllSubdomains = deleteAllSubdomains;
 window.loadSubdomains = loadSubdomains;
 </script>
 </body>
