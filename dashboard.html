@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard</title>
 <style>
+/* ... same CSS as before ... */
 :root {
   --bg: #0b0f1a;
   --card: #111827;
@@ -408,46 +409,15 @@ button {
 </header>
 
 <section class="dashboard" id="dash">
-  <!-- Feature Cards -->
-  <div class="card locked" data-feature="attendance">
-    <h3>📊 Attendance</h3>
-    <p>Daily attendance tracking</p>
-  </div>
-  
-  <div class="card locked" data-feature="students">
-    <h3>👨‍🎓 Students</h3>
-    <p>Student database management</p>
-  </div>
-  
-  <div class="card locked" data-feature="reports">
-    <h3>📈 Reports</h3>
-    <p>Monthly reports generation</p>
-  </div>
-  
-  <div class="card locked" data-feature="analytics">
-    <h3>📊 Analytics</h3>
-    <p>Insights & analytics dashboard</p>
-  </div>
-  
-  <div class="card locked" data-feature="qr">
-    <h3>📱 QR Attendance</h3>
-    <p>Scan based attendance system</p>
-  </div>
-  
-  <div class="card locked" data-feature="export">
-    <h3>📤 Export</h3>
-    <p>Excel / PDF export functionality</p>
-  </div>
-  
-  <div class="card locked" data-feature="teachers">
-    <h3>👨‍🏫 Teachers</h3>
-    <p>Multi teacher support</p>
-  </div>
-  
-  <div class="card locked" data-feature="settings">
-    <h3>⚙️ Settings</h3>
-    <p>Profile & school settings</p>
-  </div>
+  <!-- Feature Cards (same as before) -->
+  <div class="card locked" data-feature="attendance"><h3>📊 Attendance</h3><p>Daily attendance tracking</p></div>
+  <div class="card locked" data-feature="students"><h3>👨‍🎓 Students</h3><p>Student database management</p></div>
+  <div class="card locked" data-feature="reports"><h3>📈 Reports</h3><p>Monthly reports generation</p></div>
+  <div class="card locked" data-feature="analytics"><h3>📊 Analytics</h3><p>Insights & analytics dashboard</p></div>
+  <div class="card locked" data-feature="qr"><h3>📱 QR Attendance</h3><p>Scan based attendance system</p></div>
+  <div class="card locked" data-feature="export"><h3>📤 Export</h3><p>Excel / PDF export functionality</p></div>
+  <div class="card locked" data-feature="teachers"><h3>👨‍🏫 Teachers</h3><p>Multi teacher support</p></div>
+  <div class="card locked" data-feature="settings"><h3>⚙️ Settings</h3><p>Profile & school settings</p></div>
   
   <!-- Manage Subdomains Card -->
   <div class="card always-visible">
@@ -458,22 +428,17 @@ button {
     
     <p>Create teacher/student/public pages</p>
     
-    <!-- Quick Actions -->
     <div class="quick-actions">
-      <button onclick="loadSubdomains()" class="action-btn refresh-btn" title="Refresh list">
-        🔄 Refresh List
-      </button>
+      <button onclick="loadSubdomains()" class="action-btn refresh-btn">🔄 Refresh List</button>
     </div>
     
-    <!-- Subdomains History List -->
     <div id="subdomainsList">
       <div class="empty-state">
         <p>📭 No subdomains created yet</p>
-        <p style="font-size: 12px;">Create your first subdomain below</p>
+        <p style="font-size:12px;">Create your first subdomain below</p>
       </div>
     </div>
     
-    <!-- CREATE BUTTON - This was missing! -->
     <button onclick="openSubdomainModal()" class="create-btn">
       ➕ Create New Subdomain
     </button>
@@ -482,54 +447,34 @@ button {
 
 <button class="upgrade" onclick="openPlanModal()">Upgrade Plan</button>
 
-<!-- Plan Upgrade Modal -->
+<!-- Modals (same as before) -->
 <div class="modal" id="planModal">
   <div class="modal-box">
-    <h3 style="margin-bottom: 20px;">Choose Plan</h3>
-    <div class="plan">
-      <b>Intermediate - ₹499</b>
-      <p>Reports + Attendance features</p>
-      <button onclick="fakePay('intermediate')" style="background: var(--blue); color: white;">
-        Select Plan
-      </button>
-    </div>
-    <div class="plan">
-      <b>Pro - ₹999</b>
-      <p>All features unlocked</p>
-      <button onclick="fakePay('pro')" style="background: var(--gold); color: black;">
-        Select Plan
-      </button>
-    </div>
-    <button onclick="closePlanModal()" class="btn-cancel" style="margin-top: 10px;">
-      Cancel
-    </button>
+    <h3>Choose Plan</h3>
+    <div class="plan"><b>Intermediate - ₹499</b><p>Reports + Attendance</p><button onclick="fakePay('intermediate')">Select Plan</button></div>
+    <div class="plan"><b>Pro - ₹999</b><p>All features unlocked</p><button onclick="fakePay('pro')">Select Plan</button></div>
+    <button onclick="closePlanModal()" class="btn-cancel">Cancel</button>
   </div>
 </div>
 
-<!-- Subdomain Creation Modal -->
 <div class="modal" id="subdomainModal">
   <div class="modal-box">
-    <h3 style="margin-bottom: 20px;">➕ Create New Subdomain</h3>
+    <h3>➕ Create New Subdomain</h3>
     <div class="subdomain-form">
-      <input type="text" id="subdomainName" placeholder="subdomain-name (no spaces)" required>
+      <input type="text" id="subdomainName" placeholder="subdomain-name" required>
       <select id="subdomainType">
         <option value="teacher">👨‍🏫 Teacher</option>
         <option value="student">👨‍🎓 Student</option>
         <option value="public">🌐 Public Page</option>
       </select>
-      <input type="text" id="displayName" placeholder="Display Name (e.g., John's Class)">
+      <input type="text" id="displayName" placeholder="Display Name">
       <textarea id="subdomainDesc" placeholder="Description" rows="3"></textarea>
-      <button onclick="createSubdomain()" class="btn-create">
-        🚀 Create Subdomain
-      </button>
-      <button onclick="closeSubdomainModal()" class="btn-cancel">
-        Cancel
-      </button>
+      <button onclick="createSubdomain()" class="btn-create">🚀 Create Subdomain</button>
+      <button onclick="closeSubdomainModal()" class="btn-cancel">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- Notification -->
 <div id="notification" class="notification"></div>
 
 <script>
@@ -537,41 +482,44 @@ button {
 let PLAN = "BASIC";
 let SCHOOL_NAME = "School";
 let MAIN_DOMAIN = "";
+let BASE_URL = "http://localhost:5000"; // Will be replaced by server
 
-console.log("Dashboard initialized:", { PLAN, SCHOOL_NAME, MAIN_DOMAIN });
+console.log("Dashboard initialized:", { 
+  PLAN, 
+  SCHOOL_NAME, 
+  MAIN_DOMAIN, 
+  BASE_URL,
+  currentURL: window.location.href
+});
 
-// Initialize on page load
+// Initialize
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("DOM Content Loaded");
+  console.log("Page loaded from:", window.location.origin);
   
-  // Apply plan settings
+  // If BASE_URL is still localhost but we're on production, fix it
+  if (BASE_URL.includes("localhost") && !window.location.href.includes("localhost")) {
+    BASE_URL = window.location.origin;
+    console.log("Fixed BASE_URL to:", BASE_URL);
+  }
+  
   applyPlan();
-  
-  // Load subdomains immediately
   setTimeout(() => {
-    if (MAIN_DOMAIN && MAIN_DOMAIN !== "") {
-      console.log("Loading subdomains for:", MAIN_DOMAIN);
+    if (MAIN_DOMAIN) {
       loadSubdomains();
     } else {
-      console.error("MAIN_DOMAIN is not set!");
-      showNotification("⚠️ Please refresh the page", "error");
+      console.error("MAIN_DOMAIN not set!");
     }
   }, 100);
 });
 
 function applyPlan() {
-  console.log("Applying plan:", PLAN);
-  
-  // Update UI elements
   document.getElementById("badge").innerText = PLAN.toUpperCase();
   document.getElementById("school-name").innerText = `🏫 ${SCHOOL_NAME} Dashboard`;
   
-  // Reset all feature cards to locked
   document.querySelectorAll('.card[data-feature]').forEach(card => {
     card.classList.add("locked");
   });
   
-  // Unlock based on plan
   if (PLAN === "intermediate" || PLAN === "INTERMEDIATE") {
     unlock(["attendance", "reports"]);
   } else if (PLAN === "pro" || PLAN === "PRO") {
@@ -582,30 +530,16 @@ function applyPlan() {
 function unlock(features) {
   features.forEach(feature => {
     const el = document.querySelector(`[data-feature="${feature}"]`);
-    if (el) {
-      el.classList.remove("locked");
-      console.log("Unlocked:", feature);
-    }
+    if (el) el.classList.remove("locked");
   });
 }
 
-// Modal Functions
-function openPlanModal() {
-  document.getElementById("planModal").style.display = "flex";
-}
-
-function closePlanModal() {
-  document.getElementById("planModal").style.display = "none";
-}
-
-function openSubdomainModal() {
-  console.log("Opening subdomain modal");
-  document.getElementById("subdomainModal").style.display = "flex";
-}
-
-function closeSubdomainModal() {
+// Modal functions
+function openPlanModal() { document.getElementById("planModal").style.display = "flex"; }
+function closePlanModal() { document.getElementById("planModal").style.display = "none"; }
+function openSubdomainModal() { document.getElementById("subdomainModal").style.display = "flex"; }
+function closeSubdomainModal() { 
   document.getElementById("subdomainModal").style.display = "none";
-  // Clear form
   document.getElementById("subdomainName").value = "";
   document.getElementById("displayName").value = "";
   document.getElementById("subdomainDesc").value = "";
@@ -618,16 +552,13 @@ function fakePay(plan) {
   showNotification(`✅ Plan upgraded to ${plan.toUpperCase()}!`, "success");
 }
 
-// Notification System
+// Notification
 function showNotification(message, type = "success") {
   const notification = document.getElementById("notification");
   notification.textContent = message;
   notification.className = `notification ${type}`;
   notification.style.display = "block";
-  
-  setTimeout(() => {
-    notification.style.display = "none";
-  }, 3000);
+  setTimeout(() => notification.style.display = "none", 3000);
 }
 
 // Create Subdomain
@@ -637,20 +568,13 @@ function createSubdomain() {
   const name = document.getElementById("displayName").value.trim() || subdomain;
   const description = document.getElementById("subdomainDesc").value.trim();
   
-  console.log("Creating subdomain:", { subdomain, type, name, description });
-  
   if (!subdomain) {
     showNotification("❌ Subdomain name is required", "error");
     return;
   }
   
-  if (!/^[a-zA-Z0-9]+$/.test(subdomain)) {
-    showNotification("❌ Only letters and numbers allowed (no spaces)", "error");
-    return;
-  }
-  
   if (!MAIN_DOMAIN) {
-    showNotification("❌ Domain not found. Please refresh.", "error");
+    showNotification("❌ Domain not found", "error");
     return;
   }
   
@@ -665,20 +589,14 @@ function createSubdomain() {
       description: description
     })
   })
-  .then(res => {
-    if (!res.ok) throw new Error('Network error');
-    return res.json();
-  })
+  .then(res => res.json())
   .then(data => {
-    console.log("Create response:", data);
-    
     if (data.error) {
       showNotification(`❌ ${data.error}`, "error");
     } else {
       showNotification(`✅ ${data.message}`, "success");
       closeSubdomainModal();
       
-      // Refresh list and open new tab
       setTimeout(() => {
         loadSubdomains();
         if (data.accessLink) {
@@ -688,73 +606,29 @@ function createSubdomain() {
     }
   })
   .catch(error => {
-    console.error("Create error:", error);
-    showNotification("❌ Network error. Check console.", "error");
+    console.error("Error:", error);
+    showNotification("❌ Network error", "error");
   });
 }
 
-// Load Subdomains History
+// Load Subdomains - DYNAMIC URLS
 function loadSubdomains() {
-  console.log("loadSubdomains() called for domain:", MAIN_DOMAIN);
-  
-  if (!MAIN_DOMAIN || MAIN_DOMAIN === "") {
-    console.error("MAIN_DOMAIN is empty!");
-    document.getElementById("subdomainCount").textContent = "0";
-    document.getElementById("subdomainsList").innerHTML = `
-      <div class="empty-state">
-        <p>⚠️ Domain not set</p>
-        <p style="font-size:12px;">Refresh dashboard</p>
-      </div>
-    `;
-    return;
-  }
-  
-  // Show loading
-  document.getElementById("subdomainCount").textContent = "...";
-  document.getElementById("subdomainsList").innerHTML = `
-    <div class="empty-state">
-      <p>⏳ Loading subdomains...</p>
-    </div>
-  `;
+  if (!MAIN_DOMAIN) return;
   
   fetch(`/get-subdomains/${MAIN_DOMAIN}`)
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
-      console.log("Subdomains data:", data);
-      
       const list = document.getElementById("subdomainsList");
       const countElement = document.getElementById("subdomainCount");
       
-      if (!data.success || data.error) {
-        console.log("No subdomains found");
-        list.innerHTML = `
-          <div class="empty-state">
-            <p>📭 No subdomains created yet</p>
-            <p style="font-size:12px;">Create your first subdomain below</p>
-          </div>
-        `;
+      if (!data.success || !data.subdomains || data.subdomains.length === 0) {
+        list.innerHTML = `<div class="empty-state"><p>📭 No subdomains yet</p></div>`;
         countElement.textContent = "0";
         return;
       }
       
-      if (!data.subdomains || data.subdomains.length === 0) {
-        list.innerHTML = `
-          <div class="empty-state">
-            <p>📭 No subdomains created yet</p>
-            <p style="font-size:12px;">Create your first subdomain below</p>
-          </div>
-        `;
-        countElement.textContent = "0";
-        return;
-      }
-      
-      // Update count
       countElement.textContent = data.subdomains.length;
       
-      // Sort by date (newest first)
       const sortedSubdomains = data.subdomains.sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       );
@@ -763,12 +637,11 @@ function loadSubdomains() {
       sortedSubdomains.forEach((sub, index) => {
         const badgeClass = `${sub.type}-badge`;
         const badgeText = sub.type.charAt(0).toUpperCase() + sub.type.slice(1);
-        const fullUrl = `http://localhost:5000/${MAIN_DOMAIN}/${sub.subdomain}`;
+        
+        // Dynamic URL construction
+        const fullUrl = `${BASE_URL}/${MAIN_DOMAIN}/${sub.subdomain}`;
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(fullUrl)}`;
-        const createdDate = new Date(sub.createdAt).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short'
-        });
+        const createdDate = new Date(sub.createdAt).toLocaleDateString();
         
         let icon = "👤";
         if (sub.type === 'teacher') icon = "👨‍🏫";
@@ -777,36 +650,32 @@ function loadSubdomains() {
         
         html += `
           <div class="subdomain-item">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
               <div>
                 <span class="subdomain-badge ${badgeClass}">${badgeText}</span>
                 <strong>${icon} ${sub.name}</strong>
-                <span style="margin-left: 8px; font-size: 11px; color: #9ca3af;">#${index + 1}</span>
+                <span style="margin-left:8px;font-size:11px;color:#9ca3af;">#${index + 1}</span>
               </div>
-              <small style="color: #6b7280; font-size: 11px;">${createdDate}</small>
+              <small style="color:#6b7280;">${createdDate}</small>
             </div>
             
-            <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-              <div style="flex: 1;">
+            <div style="display:flex;align-items:center;gap:15px;margin-top:10px;">
+              <div style="flex:1;">
                 <a href="${fullUrl}" target="_blank" class="subdomain-link">
                   🔗 ${MAIN_DOMAIN}/${sub.subdomain}
                 </a>
-                ${sub.description ? `
-                <small style="color: #9ca3af; display: block; margin-top: 5px; font-size: 12px;">
-                  📝 ${sub.description}
-                </small>
-                ` : ''}
+                ${sub.description ? `<small style="color:#9ca3af;display:block;margin-top:5px;">${sub.description}</small>` : ''}
               </div>
-              <div style="text-align: center;">
-                <img src="${qrCodeUrl}" alt="QR Code" class="qr-small" title="Scan to open">
-                <small style="font-size: 10px; color: #6b7280;">Scan QR</small>
+              <div style="text-align:center;">
+                <img src="${qrCodeUrl}" alt="QR" class="qr-small">
+                <small style="font-size:10px;color:#6b7280;">Scan QR</small>
               </div>
             </div>
             
-            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-              <small style="color: #6b7280;">🆔 ${sub.subdomain}</small>
-              <button onclick="copyLink('${fullUrl}', event)" style="background: none; border: 1px solid var(--border); color: var(--blue); padding: 3px 10px; border-radius: 5px; font-size: 11px; cursor: pointer;">
-                📋 Copy Link
+            <div style="display:flex;justify-content:space-between;margin-top:8px;">
+              <small style="color:#6b7280;">🆔 ${sub.subdomain}</small>
+              <button onclick="copyLink('${fullUrl}', event)" style="background:none;border:1px solid var(--border);color:var(--blue);padding:3px 10px;border-radius:5px;font-size:11px;cursor:pointer;">
+                📋 Copy
               </button>
             </div>
           </div>
@@ -814,53 +683,35 @@ function loadSubdomains() {
       });
       
       list.innerHTML = html;
-      console.log(`✅ Loaded ${data.subdomains.length} subdomains`);
     })
     .catch(error => {
-      console.error("Load subdomains error:", error);
-      list.innerHTML = `
+      console.error("Error:", error);
+      document.getElementById("subdomainsList").innerHTML = `
         <div class="empty-state">
-          <p>❌ Error loading subdomains</p>
+          <p>❌ Error loading</p>
           <p style="font-size:12px;">Please try again</p>
         </div>
       `;
-      countElement.textContent = "!";
     });
 }
 
-// Copy Link Function
 function copyLink(url, event) {
   navigator.clipboard.writeText(url)
     .then(() => {
       const button = event.target;
-      const originalText = button.textContent;
       button.textContent = "✅ Copied!";
-      button.style.color = "#10b981";
-      button.style.borderColor = "#10b981";
-      
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.style.color = "var(--blue)";
-        button.style.borderColor = "var(--border)";
-      }, 2000);
-    })
-    .catch(err => {
-      console.error('Copy failed:', err);
-      showNotification("❌ Failed to copy", "error");
+      setTimeout(() => button.textContent = "📋 Copy", 2000);
     });
 }
 
-// Auto-refresh every 30 seconds
+// Auto-refresh
 setInterval(() => {
-  if (MAIN_DOMAIN && MAIN_DOMAIN !== "") {
-    loadSubdomains();
-  }
+  if (MAIN_DOMAIN) loadSubdomains();
 }, 30000);
 
-// Make functions globally accessible
+// Global functions
 window.openSubdomainModal = openSubdomainModal;
 window.createSubdomain = createSubdomain;
-window.copyLink = copyLink;
 window.loadSubdomains = loadSubdomains;
 </script>
 </body>
