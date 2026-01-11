@@ -6,5 +6,12 @@ module.exports = [
     "school": "45ty",
     "plan": "intermediate",
     "createdAt": "2026-01-11T03:19:22.444Z"
+  },
+  {
+    "domain": "Trpsxmd",
+    "school": "hdfhds",
+    "name": "ddd",
+    "plan": "pro",
+    "createdAt": "2026-01-11T03:39:55.908Z"
   }
 ];

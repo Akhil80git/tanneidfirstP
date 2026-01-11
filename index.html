@@ -12,10 +12,12 @@
 <button onclick="selectPlan('intermediate')">Intermediate</button>
 <button onclick="selectPlan('pro')">Pro</button>
 
-<h2>Teacher Details</h2>
-<input id="name" placeholder="Name"><br>
-<input id="email" placeholder="Email"><br>
-<input id="school" placeholder="School"><br>
+<h2>School & Teacher Details</h2>
+
+<input id="school" placeholder="School Name"><br><br>
+<input id="name" placeholder="Teacher Name"><br><br>
+<input id="domain" placeholder="School Domain (max 7 char)"><br><br>
+
 <button onclick="submitForm()">Submit</button>
 
 <script>
@@ -27,20 +29,30 @@ function selectPlan(plan){
 }
 
 function submitForm(){
-  fetch("/buy-plan",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      name: document.getElementById("name").value,
-      email: document.getElementById("email").value,
+  const domain = document.getElementById("domain").value;
+
+  if(domain.length > 7){
+    alert("Domain max 7 characters allowed");
+    return;
+  }
+
+  fetch("/buy-plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
       school: document.getElementById("school").value,
+      name: document.getElementById("name").value,
+      domain: domain,
       plan: selectedPlan
     })
   })
-  .then(res=>res.json())
-  .then(data=>{
-    alert("Dashboard Created!");
-    window.location.href = data.dashboardLink;
+  .then(res => res.json())
+  .then(data => {
+    if(data.error){
+      alert(data.error);
+    } else {
+      window.location.href = data.dashboardLink;
+    }
   });
 }
 </script>

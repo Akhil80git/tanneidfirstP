@@ -1,7 +1,6 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 app.use(express.json());
@@ -9,47 +8,54 @@ app.use(express.static(__dirname));
 
 const dataFile = path.join(__dirname, "Data.js");
 
-/* Helper: Read data from file */
+/* ---------- FILE HELPERS ---------- */
 function readData() {
   delete require.cache[require.resolve("./Data.js")];
   return require("./Data.js");
 }
 
-/* Helper: Write data to file */
 function writeData(data) {
   const content = `module.exports = ${JSON.stringify(data, null, 2)};`;
   fs.writeFileSync(dataFile, content);
 }
 
-/* BUY PLAN */
+/* ---------- BUY PLAN ---------- */
 app.post("/buy-plan", (req, res) => {
-  const { name, email, school, plan } = req.body;
+  const { domain, school, name, plan } = req.body;
 
-  const teachers = readData();
+  if (!domain || domain.length > 7) {
+    return res.json({ error: "Domain max 7 characters allowed" });
+  }
 
-  const teacher = {
-    id: uuidv4(),
-    name,
-    email,
+  const data = readData();
+
+  const exists = data.find(d => d.domain === domain);
+  if (exists) {
+    return res.json({ error: "Domain already taken" });
+  }
+
+  const record = {
+    domain,
     school,
+    name,
     plan,
     createdAt: new Date()
   };
 
-  teachers.push(teacher);
-  writeData(teachers);
+  data.push(record);
+  writeData(data);
 
   res.json({
-    dashboardLink: `/dashboard/${teacher.id}`
+    dashboardLink: `/${domain}`
   });
 });
 
-/* DASHBOARD */
-app.get("/dashboard/:id", (req, res) => {
-  const teachers = readData();
-  const teacher = teachers.find(t => t.id === req.params.id);
+/* ---------- DASHBOARD ---------- */
+app.get("/:domain", (req, res) => {
+  const data = readData();
+  const school = data.find(d => d.domain === req.params.domain);
 
-  if (!teacher) return res.send("Invalid Dashboard");
+  if (!school) return res.send("Invalid School Dashboard");
 
   const features = {
     attendance: false,
@@ -57,33 +63,45 @@ app.get("/dashboard/:id", (req, res) => {
     analytics: false
   };
 
-  if (teacher.plan === "intermediate") {
+  if (school.plan === "intermediate") {
     features.attendance = true;
     features.reports = true;
   }
 
-  if (teacher.plan === "pro") {
+  if (school.plan === "pro") {
     features.attendance = true;
     features.reports = true;
     features.analytics = true;
   }
 
   res.send(`
-    <h2>Welcome ${teacher.name}</h2>
-    <h3>Plan: ${teacher.plan.toUpperCase()}</h3>
-    <ul>
-      <li>Attendance: ${features.attendance ? "✅" : "🔒"}</li>
-      <li>Reports: ${features.reports ? "✅" : "🔒"}</li>
-      <li>Analytics: ${features.analytics ? "✅" : "🔒"}</li>
-    </ul>
-  `);
+<!DOCTYPE html>
+<html>
+<head>
+  <title>${school.school} Dashboard</title>
+</head>
+<body>
+  <h1>${school.school}</h1>
+  <h3>Teacher: ${school.name}</h3>
+  <h3>Plan: ${school.plan.toUpperCase()}</h3>
+
+  <ul>
+    <li>Attendance: ${features.attendance ? "✅" : "🔒"}</li>
+    <li>Reports: ${features.reports ? "✅" : "🔒"}</li>
+    <li>Analytics: ${features.analytics ? "✅" : "🔒"}</li>
+  </ul>
+
+  <p><b>Dashboard URL:</b> https://tanneidfirstp.onrender.com/${school.domain}</p>
+</body>
+</html>
+`);
 });
 
-/* ADMIN CHECK */
+/* ---------- ADMIN CHECK ---------- */
 app.get("/all-data", (req, res) => {
   res.json(readData());
 });
 
-app.listen(5000, () =>
-  console.log("Server running on http://localhost:5000")
-);
+app.listen(5000, () => {
+  console.log("Server running on http://localhost:5000");
+});
