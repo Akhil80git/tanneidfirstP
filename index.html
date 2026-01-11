@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher SaaS</title>
+</head>
+<body>
+
+<h1>Teacher Attendance SaaS</h1>
+
+<h2>Select Plan</h2>
+<button onclick="selectPlan('basic')">Basic</button>
+<button onclick="selectPlan('intermediate')">Intermediate</button>
+<button onclick="selectPlan('pro')">Pro</button>
+
+<h2>Teacher Details</h2>
+<input id="name" placeholder="Name"><br>
+<input id="email" placeholder="Email"><br>
+<input id="school" placeholder="School"><br>
+<button onclick="submitForm()">Submit</button>
+
+<script>
+let selectedPlan = "";
+
+function selectPlan(plan){
+  selectedPlan = plan;
+  alert("Selected Plan: " + plan);
+}
+
+function submitForm(){
+  fetch("/buy-plan",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      school: document.getElementById("school").value,
+      plan: selectedPlan
+    })
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    alert("Dashboard Created!");
+    window.location.href = data.dashboardLink;
+  });
+}
+</script>
+
+</body>
+</html>
