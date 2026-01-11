@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<style>
+:root {
+  --bg: #0b0f1a;
+  --card: #111827;
+  --border: #1f2937;
+  --gold: #facc15;
+  --blue: #38bdf8;
+  --green: #10b981;
+  --red: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #020617, #020617, #020617);
+  color: white;
+  min-height: 100vh;
+}
+
+/* Header */
+header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.plan-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--gold);
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Dashboard Grid */
+.dashboard {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+/* Cards */
+.card {
+  background: linear-gradient(180deg, #020617, #020617);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  min-height: 120px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card p {
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* Locked Cards */
+.locked {
+  filter: blur(1px);
+  opacity: 0.6;
+}
+
+.locked::after {
+  content: "🔒 Upgrade";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 18px;
+}
+
+/* ALWAYS VISIBLE CARD */
+.always-visible {
+  filter: none !important;
+  opacity: 1 !important;
+  grid-column: span 2;
+  min-height: auto;
+}
+
+.always-visible::after {
+  content: none !important;
+}
+
+/* Upgrade Button */
+.upgrade {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 26px;
+  background: linear-gradient(135deg, #facc15, #fde047);
+  color: #000;
+  border-radius: 40px;
+  font-weight: 800;
+  border: none;
+  box-shadow: 0 10px 30px rgba(250, 204, 21, 0.6);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.upgrade:hover {
+  transform: translateX(-50%) translateY(-3px);
+  box-shadow: 0 15px 35px rgba(250, 204, 21, 0.7);
+}
+
+/* Modals */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #020617;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid var(--border);
+}
+
+.plan {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+
+.plan button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* History Section */
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.history-count {
+  background: var(--blue);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+#subdomainsList {
+  margin-top: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Scrollbar */
+#subdomainsList::-webkit-scrollbar {
+  width: 5px;
+}
+
+#subdomainsList::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+#subdomainsList::-webkit-scrollbar-thumb {
+  background: var(--blue);
+  border-radius: 10px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #9ca3af;
+}
+
+.empty-state p {
+  margin: 5px 0;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.refresh-btn {
+  background: var(--green);
+  color: white;
+}
+
+/* Create Button - IMPORTANT FIX */
+.create-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 15px;
+  display: block !important;
+}
+
+.create-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Subdomain Items */
+.subdomain-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 8px 0;
+  transition: all 0.3s;
+}
+
+.subdomain-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.subdomain-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: bold;
+  display: block;
+  margin: 5px 0;
+  padding: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid var(--blue);
+  transition: all 0.3s;
+  word-break: break-all;
+}
+
+.subdomain-link:hover {
+  text-decoration: underline;
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.subdomain-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-right: 8px;
+  color: white;
+}
+
+.teacher-badge { background: #3b82f6; }
+.student-badge { background: #10b981; }
+.public-badge { background: #f59e0b; }
+
+/* Subdomain Form */
+.subdomain-form input,
+.subdomain-form select,
+.subdomain-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 14px;
+}
+
+.subdomain-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.subdomain-form button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.btn-create {
+  background: var(--blue);
+  color: white;
+}
+
+.btn-cancel {
+  background: #4b5563;
+  color: white;
+}
+
+/* QR Code */
+.qr-small {
+  width: 80px;
+  height: 80px;
+  border: 5px solid white;
+  border-radius: 8px;
+  margin: 10px auto;
+  display: block;
+}
+
+/* Notification */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  z-index: 9999;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.success { background: var(--green); color: white; }
+.error { background: var(--red); color: white; }
+
+/* Make sure buttons are visible */
+button {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+</style>
+</head>
+<body>
+<header>
+  <h2 id="school-name">🏫 School Dashboard</h2>
+  <div class="plan-badge" id="badge">BASIC</div>
+</header>
+
+<section class="dashboard" id="dash">
+  <!-- Feature Cards -->
+  <div class="card locked" data-feature="attendance">
+    <h3>📊 Attendance</h3>
+    <p>Daily attendance tracking</p>
+  </div>
+  
+  <div class="card locked" data-feature="students">
+    <h3>👨‍🎓 Students</h3>
+    <p>Student database management</p>
+  </div>
+  
+  <div class="card locked" data-feature="reports">
+    <h3>📈 Reports</h3>
+    <p>Monthly reports generation</p>
+  </div>
+  
+  <div class="card locked" data-feature="analytics">
+    <h3>📊 Analytics</h3>
+    <p>Insights & analytics dashboard</p>
+  </div>
+  
+  <div class="card locked" data-feature="qr">
+    <h3>📱 QR Attendance</h3>
+    <p>Scan based attendance system</p>
+  </div>
+  
+  <div class="card locked" data-feature="export">
+    <h3>📤 Export</h3>
+    <p>Excel / PDF export functionality</p>
+  </div>
+  
+  <div class="card locked" data-feature="teachers">
+    <h3>👨‍🏫 Teachers</h3>
+    <p>Multi teacher support</p>
+  </div>
+  
+  <div class="card locked" data-feature="settings">
+    <h3>⚙️ Settings</h3>
+    <p>Profile & school settings</p>
+  </div>
+  
+  <!-- Manage Subdomains Card -->
+  <div class="card always-visible">
+    <div class="history-header">
+      <h3>📁 Manage Subdomains</h3>
+      <span class="history-count" id="subdomainCount">0</span>
+    </div>
+    
+    <p>Create teacher/student/public pages</p>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button onclick="loadSubdomains()" class="action-btn refresh-btn" title="Refresh list">
+        🔄 Refresh List
+      </button>
+    </div>
+    
+    <!-- Subdomains History List -->
+    <div id="subdomainsList">
+      <div class="empty-state">
+        <p>📭 No subdomains created yet</p>
+        <p style="font-size: 12px;">Create your first subdomain below</p>
+      </div>
+    </div>
+    
+    <!-- CREATE BUTTON - This was missing! -->
+    <button onclick="openSubdomainModal()" class="create-btn">
+      ➕ Create New Subdomain
+    </button>
+  </div>
+</section>
+
+<button class="upgrade" onclick="openPlanModal()">Upgrade Plan</button>
+
+<!-- Plan Upgrade Modal -->
+<div class="modal" id="planModal">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 20px;">Choose Plan</h3>
+    <div class="plan">
+      <b>Intermediate - ₹499</b>
+      <p>Reports + Attendance features</p>
+      <button onclick="fakePay('intermediate')" style="background: var(--blue); color: white;">
+        Select Plan
+      </button>
+    </div>
+    <div class="plan">
+      <b>Pro - ₹999</b>
+      <p>All features unlocked</p>
+      <button onclick="fakePay('pro')" style="background: var(--gold); color: black;">
+        Select Plan
+      </button>
+    </div>
+    <button onclick="closePlanModal()" class="btn-cancel" style="margin-top: 10px;">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<!-- Subdomain Creation Modal -->
+<div class="modal" id="subdomainModal">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 20px;">➕ Create New Subdomain</h3>
+    <div class="subdomain-form">
+      <input type="text" id="subdomainName" placeholder="subdomain-name (no spaces)" required>
+      <select id="subdomainType">
+        <option value="teacher">👨‍🏫 Teacher</option>
+        <option value="student">👨‍🎓 Student</option>
+        <option value="public">🌐 Public Page</option>
+      </select>
+      <input type="text" id="displayName" placeholder="Display Name (e.g., John's Class)">
+      <textarea id="subdomainDesc" placeholder="Description" rows="3"></textarea>
+      <button onclick="createSubdomain()" class="btn-create">
+        🚀 Create Subdomain
+      </button>
+      <button onclick="closeSubdomainModal()" class="btn-cancel">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div id="notification" class="notification"></div>
+
+<script>
+// Dynamic values injected from server
+let PLAN = "BASIC";
+let SCHOOL_NAME = "School";
+let MAIN_DOMAIN = "";
+
+console.log("Dashboard initialized:", { PLAN, SCHOOL_NAME, MAIN_DOMAIN });
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("DOM Content Loaded");
+  
+  // Apply plan settings
+  applyPlan();
+  
+  // Load subdomains immediately
+  setTimeout(() => {
+    if (MAIN_DOMAIN && MAIN_DOMAIN !== "") {
+      console.log("Loading subdomains for:", MAIN_DOMAIN);
+      loadSubdomains();
+    } else {
+      console.error("MAIN_DOMAIN is not set!");
+      showNotification("⚠️ Please refresh the page", "error");
+    }
+  }, 100);
+});
+
+function applyPlan() {
+  console.log("Applying plan:", PLAN);
+  
+  // Update UI elements
+  document.getElementById("badge").innerText = PLAN.toUpperCase();
+  document.getElementById("school-name").innerText = `🏫 ${SCHOOL_NAME} Dashboard`;
+  
+  // Reset all feature cards to locked
+  document.querySelectorAll('.card[data-feature]').forEach(card => {
+    card.classList.add("locked");
+  });
+  
+  // Unlock based on plan
+  if (PLAN === "intermediate" || PLAN === "INTERMEDIATE") {
+    unlock(["attendance", "reports"]);
+  } else if (PLAN === "pro" || PLAN === "PRO") {
+    unlock(["attendance", "reports", "students", "analytics", "qr", "export", "teachers", "settings"]);
+  }
+}
+
+function unlock(features) {
+  features.forEach(feature => {
+    const el = document.querySelector(`[data-feature="${feature}"]`);
+    if (el) {
+      el.classList.remove("locked");
+      console.log("Unlocked:", feature);
+    }
+  });
+}
+
+// Modal Functions
+function openPlanModal() {
+  document.getElementById("planModal").style.display = "flex";
+}
+
+function closePlanModal() {
+  document.getElementById("planModal").style.display = "none";
+}
+
+function openSubdomainModal() {
+  console.log("Opening subdomain modal");
+  document.getElementById("subdomainModal").style.display = "flex";
+}
+
+function closeSubdomainModal() {
+  document.getElementById("subdomainModal").style.display = "none";
+  // Clear form
+  document.getElementById("subdomainName").value = "";
+  document.getElementById("displayName").value = "";
+  document.getElementById("subdomainDesc").value = "";
+}
+
+function fakePay(plan) {
+  PLAN = plan;
+  document.getElementById("planModal").style.display = "none";
+  applyPlan();
+  showNotification(`✅ Plan upgraded to ${plan.toUpperCase()}!`, "success");
+}
+
+// Notification System
+function showNotification(message, type = "success") {
+  const notification = document.getElementById("notification");
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.style.display = "block";
+  
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 3000);
+}
+
+// Create Subdomain
+function createSubdomain() {
+  const subdomain = document.getElementById("subdomainName").value.trim();
+  const type = document.getElementById("subdomainType").value;
+  const name = document.getElementById("displayName").value.trim() || subdomain;
+  const description = document.getElementById("subdomainDesc").value.trim();
+  
+  console.log("Creating subdomain:", { subdomain, type, name, description });
+  
+  if (!subdomain) {
+    showNotification("❌ Subdomain name is required", "error");
+    return;
+  }
+  
+  if (!/^[a-zA-Z0-9]+$/.test(subdomain)) {
+    showNotification("❌ Only letters and numbers allowed (no spaces)", "error");
+    return;
+  }
+  
+  if (!MAIN_DOMAIN) {
+    showNotification("❌ Domain not found. Please refresh.", "error");
+    return;
+  }
+  
+  fetch("/create-subdomain", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      mainDomain: MAIN_DOMAIN,
+      subdomain: subdomain,
+      type: type,
+      name: name,
+      description: description
+    })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Network error');
+    return res.json();
+  })
+  .then(data => {
+    console.log("Create response:", data);
+    
+    if (data.error) {
+      showNotification(`❌ ${data.error}`, "error");
+    } else {
+      showNotification(`✅ ${data.message}`, "success");
+      closeSubdomainModal();
+      
+      // Refresh list and open new tab
+      setTimeout(() => {
+        loadSubdomains();
+        if (data.accessLink) {
+          window.open(data.accessLink, '_blank');
+        }
+      }, 500);
+    }
+  })
+  .catch(error => {
+    console.error("Create error:", error);
+    showNotification("❌ Network error. Check console.", "error");
+  });
+}
+
+// Load Subdomains History
+function loadSubdomains() {
+  console.log("loadSubdomains() called for domain:", MAIN_DOMAIN);
+  
+  if (!MAIN_DOMAIN || MAIN_DOMAIN === "") {
+    console.error("MAIN_DOMAIN is empty!");
+    document.getElementById("subdomainCount").textContent = "0";
+    document.getElementById("subdomainsList").innerHTML = `
+      <div class="empty-state">
+        <p>⚠️ Domain not set</p>
+        <p style="font-size:12px;">Refresh dashboard</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Show loading
+  document.getElementById("subdomainCount").textContent = "...";
+  document.getElementById("subdomainsList").innerHTML = `
+    <div class="empty-state">
+      <p>⏳ Loading subdomains...</p>
+    </div>
+  `;
+  
+  fetch(`/get-subdomains/${MAIN_DOMAIN}`)
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      console.log("Subdomains data:", data);
+      
+      const list = document.getElementById("subdomainsList");
+      const countElement = document.getElementById("subdomainCount");
+      
+      if (!data.success || data.error) {
+        console.log("No subdomains found");
+        list.innerHTML = `
+          <div class="empty-state">
+            <p>📭 No subdomains created yet</p>
+            <p style="font-size:12px;">Create your first subdomain below</p>
+          </div>
+        `;
+        countElement.textContent = "0";
+        return;
+      }
+      
+      if (!data.subdomains || data.subdomains.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <p>📭 No subdomains created yet</p>
+            <p style="font-size:12px;">Create your first subdomain below</p>
+          </div>
+        `;
+        countElement.textContent = "0";
+        return;
+      }
+      
+      // Update count
+      countElement.textContent = data.subdomains.length;
+      
+      // Sort by date (newest first)
+      const sortedSubdomains = data.subdomains.sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      
+      let html = "";
+      sortedSubdomains.forEach((sub, index) => {
+        const badgeClass = `${sub.type}-badge`;
+        const badgeText = sub.type.charAt(0).toUpperCase() + sub.type.slice(1);
+        const fullUrl = `http://localhost:5000/${MAIN_DOMAIN}/${sub.subdomain}`;
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(fullUrl)}`;
+        const createdDate = new Date(sub.createdAt).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short'
+        });
+        
+        let icon = "👤";
+        if (sub.type === 'teacher') icon = "👨‍🏫";
+        if (sub.type === 'student') icon = "👨‍🎓";
+        if (sub.type === 'public') icon = "🌐";
+        
+        html += `
+          <div class="subdomain-item">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <span class="subdomain-badge ${badgeClass}">${badgeText}</span>
+                <strong>${icon} ${sub.name}</strong>
+                <span style="margin-left: 8px; font-size: 11px; color: #9ca3af;">#${index + 1}</span>
+              </div>
+              <small style="color: #6b7280; font-size: 11px;">${createdDate}</small>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+              <div style="flex: 1;">
+                <a href="${fullUrl}" target="_blank" class="subdomain-link">
+                  🔗 ${MAIN_DOMAIN}/${sub.subdomain}
+                </a>
+                ${sub.description ? `
+                <small style="color: #9ca3af; display: block; margin-top: 5px; font-size: 12px;">
+                  📝 ${sub.description}
+                </small>
+                ` : ''}
+              </div>
+              <div style="text-align: center;">
+                <img src="${qrCodeUrl}" alt="QR Code" class="qr-small" title="Scan to open">
+                <small style="font-size: 10px; color: #6b7280;">Scan QR</small>
+              </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+              <small style="color: #6b7280;">🆔 ${sub.subdomain}</small>
+              <button onclick="copyLink('${fullUrl}', event)" style="background: none; border: 1px solid var(--border); color: var(--blue); padding: 3px 10px; border-radius: 5px; font-size: 11px; cursor: pointer;">
+                📋 Copy Link
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      list.innerHTML = html;
+      console.log(`✅ Loaded ${data.subdomains.length} subdomains`);
+    })
+    .catch(error => {
+      console.error("Load subdomains error:", error);
+      list.innerHTML = `
+        <div class="empty-state">
+          <p>❌ Error loading subdomains</p>
+          <p style="font-size:12px;">Please try again</p>
+        </div>
+      `;
+      countElement.textContent = "!";
+    });
+}
+
+// Copy Link Function
+function copyLink(url, event) {
+  navigator.clipboard.writeText(url)
+    .then(() => {
+      const button = event.target;
+      const originalText = button.textContent;
+      button.textContent = "✅ Copied!";
+      button.style.color = "#10b981";
+      button.style.borderColor = "#10b981";
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.color = "var(--blue)";
+        button.style.borderColor = "var(--border)";
+      }, 2000);
+    })
+    .catch(err => {
+      console.error('Copy failed:', err);
+      showNotification("❌ Failed to copy", "error");
+    });
+}
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+  if (MAIN_DOMAIN && MAIN_DOMAIN !== "") {
+    loadSubdomains();
+  }
+}, 30000);
+
+// Make functions globally accessible
+window.openSubdomainModal = openSubdomainModal;
+window.createSubdomain = createSubdomain;
+window.copyLink = copyLink;
+window.loadSubdomains = loadSubdomains;
+</script>
+</body>
+</html>

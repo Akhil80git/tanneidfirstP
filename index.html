@@ -1,61 +1,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Teacher SaaS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher SaaS</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: white;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+}
+button {
+  padding: 12px 24px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 8px;
+  background: #facc15;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+#submitBtn {
+  width: 100%;
+  background: #3b82f6;
+  color: white;
+  margin-top: 20px;
+  padding: 15px;
+  font-size: 18px;
+}
+</style>
 </head>
 <body>
+<h1>🏫 Teacher Attendance SaaS</h1>
 
-<h1>Teacher Attendance SaaS</h1>
+<h2>Enter Details</h2>
+<input id="school" placeholder="School Name" required>
+<input id="name" placeholder="Teacher Name" required>
+<input id="email" placeholder="Email" type="email" required>
+<input id="domain" placeholder="Domain Name (max 7 chars)" required>
 
 <h2>Select Plan</h2>
-<button onclick="selectPlan('basic')">Basic</button>
-<button onclick="selectPlan('intermediate')">Intermediate</button>
-<button onclick="selectPlan('pro')">Pro</button>
+<button onclick="selectPlan('basic')">Basic - Free</button>
+<button onclick="selectPlan('intermediate')">Intermediate - ₹499</button>
+<button onclick="selectPlan('pro')">Pro - ₹999</button>
 
-<h2>School & Teacher Details</h2>
-
-<input id="school" placeholder="School Name"><br><br>
-<input id="name" placeholder="Teacher Name"><br><br>
-<input id="domain" placeholder="School Domain (max 7 char)"><br><br>
-
-<button onclick="submitForm()">Submit</button>
+<button id="submitBtn" onclick="submitForm()">Create Dashboard</button>
 
 <script>
-let selectedPlan = "";
+let selectedPlan = "basic";
 
-function selectPlan(plan){
+function selectPlan(plan) {
   selectedPlan = plan;
-  alert("Selected Plan: " + plan);
+  alert(`✅ Selected: ${plan.toUpperCase()} plan`);
+  
+  // Highlight selected button
+  document.querySelectorAll('button').forEach(btn => {
+    btn.style.opacity = '0.7';
+  });
+  event.target.style.opacity = '1';
+  event.target.style.boxShadow = '0 0 0 2px #facc15';
 }
 
-function submitForm(){
-  const domain = document.getElementById("domain").value;
-
-  if(domain.length > 7){
-    alert("Domain max 7 characters allowed");
+function submitForm() {
+  const domain = document.getElementById("domain").value.trim();
+  const school = document.getElementById("school").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  
+  if (!selectedPlan) {
+    alert("Please select a plan first");
     return;
   }
-
+  
+  if (!domain || !school || !name || !email) {
+    alert("Please fill all fields");
+    return;
+  }
+  
+  if (domain.length > 7) {
+    alert("Domain must be 7 characters or less");
+    return;
+  }
+  
+  console.log("Submitting:", { domain, school, name, email, plan: selectedPlan });
+  
   fetch("/buy-plan", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      school: document.getElementById("school").value,
-      name: document.getElementById("name").value,
-      domain: domain,
-      plan: selectedPlan
-    })
+    body: JSON.stringify({ domain, school, name, email, plan: selectedPlan })
   })
   .then(res => res.json())
   .then(data => {
-    if(data.error){
-      alert(data.error);
+    if (data.error) {
+      alert("Error: " + data.error);
     } else {
+      alert("✅ Dashboard created successfully!");
       window.location.href = data.dashboardLink;
     }
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    alert("Network error. Please try again.");
   });
 }
 </script>
-
 </body>
 </html>

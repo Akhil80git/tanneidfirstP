@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Public Page</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:0;background:#f0f0f0;color:#111;}
+header{background:#111827;color:#fff;padding:16px;text-align:center;}
+section{padding:20px;}
+.card{background:#fff;padding:20px;margin:12px 0;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.2);}
+</style>
+</head>
+<body>
+<header>
+<h1 id="schoolName">School Info</h1>
+</header>
+<section id="content">
+<div class="card"><h3>Teachers</h3><p id="teachersList">No teachers</p></div>
+<div class="card"><h3>Students</h3><p id="studentsList">No students</p></div>
+</section>
+<script>
+let SCHOOL="School";
+let TEACHERS=[];
+let STUDENTS=[];
+
+document.getElementById("schoolName").innerText=SCHOOL;
+document.getElementById("teachersList").innerText=TEACHERS.join(", ") || "No teachers";
+document.getElementById("studentsList").innerText=STUDENTS.join(", ") || "No students";
+</script>
+</body>
+</html>
