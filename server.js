@@ -196,7 +196,10 @@ app.get("/dashboard/:domain", (req, res) => {
   if (!school) {
     return res.send(`
       <!DOCTYPE html>
-      <html><body><h1>Invalid Dashboard</h1></body></html>
+      <html>
+      <head><style>body{font-family:Arial;padding:40px;text-align:center;}</style></head>
+      <body><h1>Invalid Dashboard</h1><p>School domain not found: ${req.params.domain}</p></body>
+      </html>
     `);
   }
   
@@ -204,6 +207,35 @@ app.get("/dashboard/:domain", (req, res) => {
     path.join(__dirname, "dashboard.html"),
     "utf-8"
   );
+  
+  // Debug log
+  console.log(`📊 Loading dashboard for: ${school.domain}, School: ${school.school}`);
+  
+  // REPLACE the variables in HTML with actual values
+  dashboardHtml = dashboardHtml.replace(
+    'let PLAN = "BASIC";',
+    `let PLAN = "${school.plan || 'basic'}";`
+  );
+  
+  dashboardHtml = dashboardHtml.replace(
+    'let SCHOOL_NAME = "School";',
+    `let SCHOOL_NAME = "${school.school.replace(/"/g, '\\"')}";`
+  );
+  
+  dashboardHtml = dashboardHtml.replace(
+    'let MAIN_DOMAIN = "";',
+    `let MAIN_DOMAIN = "${school.domain}";`
+  );
+  
+  // Also inject BASE_URL
+  const baseUrl = process.env.RENDER_EXTERNAL_URL || req.headers.origin || `http://localhost:${process.env.PORT || 5000}`;
+  dashboardHtml = dashboardHtml.replace(
+    '</script>',
+    `const BASE_URL = "${baseUrl}";\nconsole.log("🚀 Dashboard initialized: ", {PLAN: "${school.plan}", SCHOOL: "${school.school}", DOMAIN: "${school.domain}", BASE_URL: "${baseUrl}"});\n</script>`
+  );
+  
+  res.send(dashboardHtml);
+});
   
   // Get dynamic base URL
   const baseUrl = process.env.RENDER_EXTERNAL_URL || req.headers.origin || `http://localhost:${process.env.PORT || 5000}`;
