@@ -190,6 +190,35 @@ header{padding:16px 20px;display:flex;justify-content:space-between;align-items:
   z-index:9999; 
   box-shadow:0 5px 15px rgba(0,0,0,0.3);
 }
+
+/* QR Code in List */
+.qr-small {
+  width: 80px;
+  height: 80px;
+  border: 4px solid white;
+  border-radius: 8px;
+  margin: 5px auto;
+  display: block;
+}
+
+.qr-container {
+  text-align: center;
+  margin: 10px 0;
+  padding: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+}
+
+.id-display {
+  font-family: monospace;
+  font-size: 10px;
+  color: #93c5fd;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 5px 0;
+  word-break: break-all;
+}
 </style>
 </head>
 <body>
@@ -328,7 +357,7 @@ function applyPlan() {
   document.getElementById("badge").textContent = PLAN.toUpperCase();
   
   // Update school name
-  document.getElementById("school-name").textContent = `🏫 ${SCHOOL_NAME} Dashboard`;
+  document.getElementById("school-name").textContent = \`🏫 \${SCHOOL_NAME} Dashboard\`;
   
   // Lock all feature cards initially
   document.querySelectorAll('.card[data-feature]').forEach(card => {
@@ -346,7 +375,7 @@ function applyPlan() {
 
 function unlockFeatures(features) {
   features.forEach(feature => {
-    const card = document.querySelector(`[data-feature="${feature}"]`);
+    const card = document.querySelector(\`[data-feature="\${feature}"]\`);
     if (card) {
       card.classList.remove("locked");
     }
@@ -377,7 +406,7 @@ function fakePay(plan) {
   PLAN = plan;
   closePlanModal();
   applyPlan();
-  alert(`🎉 Plan upgraded to ${plan.toUpperCase()}!`);
+  alert(\`🎉 Plan upgraded to \${plan.toUpperCase()}!\`);
 }
 
 // Notification
@@ -410,7 +439,7 @@ function createSubdomain() {
   }
   
   // Validate format
-  if (!/^[a-zA-Z0-9]+$/.test(subdomain)) {
+  if (!/^[a-zA-Z0-9]+\$/.test(subdomain)) {
     showNotification("❌ Only letters and numbers allowed", "error");
     return;
   }
@@ -453,7 +482,7 @@ function createSubdomain() {
   });
 }
 
-// Load Subdomains
+// Load Subdomains - UPDATED FOR NEW DATA STRUCTURE
 function loadSubdomains() {
   console.log("📡 Loading subdomains for:", MAIN_DOMAIN);
   
@@ -464,52 +493,50 @@ function loadSubdomains() {
   }
   
   document.getElementById("subdomainCount").textContent = "Loading...";
-  document.getElementById("subdomainsList").innerHTML = `
+  document.getElementById("subdomainsList").innerHTML = \`
     <div class="empty-state">
       <p>⏳ Loading subdomains...</p>
     </div>
-  `;
+  \`;
   
-  fetch(`/get-subdomains/${MAIN_DOMAIN}`)
+  fetch(\`/get-subdomains/\${MAIN_DOMAIN}\`)
     .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(\`HTTP \${res.status}\`);
       return res.json();
     })
     .then(data => {
       console.log("📦 Subdomains data:", data);
       
       if (!data.success || data.error) {
-        document.getElementById("subdomainsList").innerHTML = `
+        document.getElementById("subdomainsList").innerHTML = \`
           <div class="empty-state">
             <p>📭 No subdomains found</p>
-            <p style="font-size: 12px;">${data.error || 'Create your first subdomain'}</p>
+            <p style="font-size: 12px;">\${data.error || 'Create your first subdomain'}</p>
           </div>
-        `;
+        \`;
         document.getElementById("subdomainCount").textContent = "0 Created";
         return;
       }
       
       const subdomains = data.subdomains || [];
-      document.getElementById("subdomainCount").textContent = `${subdomains.length} Created`;
+      document.getElementById("subdomainCount").textContent = \`\${subdomains.length} Created\`;
       
       if (subdomains.length === 0) {
-        document.getElementById("subdomainsList").innerHTML = `
+        document.getElementById("subdomainsList").innerHTML = \`
           <div class="empty-state">
             <p>📭 No subdomains created yet</p>
             <p style="font-size: 12px;">Create your first subdomain below</p>
           </div>
-        `;
+        \`;
         return;
       }
       
-      // Display subdomains
+      // Display subdomains with NEW DATA STRUCTURE
       let html = "";
-      const baseUrl = window.location.origin;
       
       subdomains.forEach((sub, index) => {
-        const badgeClass = `${sub.type}-badge`;
+        const badgeClass = \`\${sub.type}-badge\`;
         const badgeText = sub.type.charAt(0).toUpperCase() + sub.type.slice(1);
-        const fullUrl = `${baseUrl}/${MAIN_DOMAIN}/${sub.subdomain}`;
         const createdDate = new Date(sub.createdAt).toLocaleDateString();
         
         let icon = "👤";
@@ -517,62 +544,80 @@ function loadSubdomains() {
         if (sub.type === 'student') icon = "👨‍🎓";
         if (sub.type === 'public') icon = "🌐";
         
-        html += `
+        // Use new fields: uniqueId, qrCodeUrl, fullUrl, shortCode
+        const uniqueId = sub.uniqueId || sub.subdomain;
+        const qrCodeUrl = sub.qrCodeUrl || \`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=\${encodeURIComponent(sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId)}\`;
+        const fullUrl = sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId;
+        const shortCode = sub.shortCode || uniqueId.substring(0, 8);
+        
+        html += \`
           <div class="subdomain-item">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
-                <span class="subdomain-badge ${badgeClass}">${badgeText}</span>
-                <strong>${icon} ${sub.name}</strong>
-                <span style="margin-left: 8px; font-size: 11px; color: #9ca3af;">#${index + 1}</span>
+                <span class="subdomain-badge \${badgeClass}">\${badgeText}</span>
+                <strong>\${icon} \${sub.name}</strong>
+                <span style="margin-left: 8px; font-size: 11px; color: #9ca3af;">#\${index + 1}</span>
               </div>
-              <small style="color:#6b7280; font-size: 11px;">${createdDate}</small>
+              <small style="color:#6b7280; font-size: 11px;">\${createdDate}</small>
             </div>
             
-            ${sub.description ? `
+            \${sub.description ? \`
             <div style="margin: 8px 0; color: #9ca3af; font-size: 13px;">
-              📝 ${sub.description}
+              📝 \${sub.description}
             </div>
-            ` : ''}
+            \` : ''}
             
-            <a href="${fullUrl}" target="_blank" class="subdomain-link">
-              🔗 ${MAIN_DOMAIN}/${sub.subdomain}
+            <!-- QR Code Display -->
+            <div class="qr-container">
+              <img src="\${qrCodeUrl}" alt="QR Code" class="qr-small">
+              <div style="font-size: 10px; color: #6b7280; margin-top: 3px;">Scan to open</div>
+            </div>
+            
+            <div class="id-display">
+              <strong>ID:</strong> \${shortCode}
+            </div>
+            
+            <a href="\${fullUrl}" target="_blank" class="subdomain-link">
+              🔗 Open \${sub.type} Dashboard
             </a>
             
             <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-              <small style="color:#6b7280;">ID: ${sub.subdomain}</small>
-              <button onclick="deleteSubdomain('${sub.subdomain}', '${sub.name}')" style="background:none; border:1px solid #ef4444; color:#ef4444; padding:3px 10px; border-radius:5px; font-size:11px; cursor:pointer;">
+              <button onclick="navigator.clipboard.writeText('\${fullUrl}');alert('✅ Link copied!')" style="background:none; border:1px solid #3b82f6; color:#3b82f6; padding:3px 10px; border-radius:5px; font-size:11px; cursor:pointer;">
+                📋 Copy Link
+              </button>
+              <button onclick="deleteSubdomain('\${uniqueId}', '\${sub.name}')" style="background:none; border:1px solid #ef4444; color:#ef4444; padding:3px 10px; border-radius:5px; font-size:11px; cursor:pointer;">
                 🗑️ Delete
               </button>
             </div>
           </div>
-        `;
+        \`;
       });
       
       document.getElementById("subdomainsList").innerHTML = html;
     })
     .catch(error => {
       console.error("❌ Error loading subdomains:", error);
-      document.getElementById("subdomainsList").innerHTML = `
+      document.getElementById("subdomainsList").innerHTML = \`
         <div class="empty-state">
           <p>❌ Error loading subdomains</p>
-          <p style="font-size: 12px;">${error.message}</p>
+          <p style="font-size: 12px;">\${error.message}</p>
         </div>
-      `;
+      \`;
       document.getElementById("subdomainCount").textContent = "Error";
     });
 }
 
-// Delete Subdomain
-function deleteSubdomain(subdomainName, displayName) {
-  if (!confirm(`Delete "${displayName}" (${subdomainName})?`)) return;
+// Delete Subdomain - UPDATED TO USE UNIQUE ID
+function deleteSubdomain(uniqueId, displayName) {
+  if (!confirm(\`Delete "\${displayName}"?\`)) return;
   
-  fetch(`/delete-subdomain/${MAIN_DOMAIN}/${subdomainName}`, {
+  fetch(\`/delete-subdomain/\${MAIN_DOMAIN}/\${uniqueId}\`, {
     method: 'DELETE'
   })
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      showNotification("✅ Deleted successfully", "success");
+      showNotification("✅ " + data.message, "success");
       loadSubdomains();
     } else {
       showNotification("❌ " + data.error, "error");
@@ -588,13 +633,13 @@ function deleteSubdomain(subdomainName, displayName) {
 function deleteAllSubdomains() {
   if (!confirm("Delete ALL subdomains? This cannot be undone!")) return;
   
-  fetch(`/delete-all-subdomains/${MAIN_DOMAIN}`, {
+  fetch(\`/delete-all-subdomains/\${MAIN_DOMAIN}\`, {
     method: 'DELETE'
   })
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      showNotification("✅ All subdomains deleted", "success");
+      showNotification("✅ " + data.message, "success");
       loadSubdomains();
     } else {
       showNotification("❌ " + data.error, "error");
