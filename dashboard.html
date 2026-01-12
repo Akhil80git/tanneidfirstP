@@ -5,324 +5,869 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard</title>
 <style>
-:root{--bg:#0b0f1a;--card:#111827;--border:#1f2937;--gold:#facc15;--blue:#38bdf8;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Inter,system-ui;background:linear-gradient(135deg,#020617,#020617,#020617);color:#fff;min-height:100vh;}
-header{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);backdrop-filter:blur(10px);}
-.plan-badge{padding:6px 14px;border-radius:20px;background:var(--gold);color:#000;font-weight:700;}
-.dashboard{padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;}
-.card{background:linear-gradient(180deg,#020617,#020617);border:1px solid var(--border);border-radius:18px;padding:20px;min-height:120px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.4);}
-.card h3{margin:0 0 6px}
-.card p{font-size:13px;color:#9ca3af}
-.locked{filter:blur(1px);opacity:.6}
-.locked::after{content:"🔒 Upgrade";position:absolute;inset:0;display:flex;justify-content:center;align-items:center;font-weight:700;font-size:14px;background:rgba(0,0,0,.6);border-radius:18px;}
-.upgrade{position:fixed;bottom:15px;left:50%;transform:translateX(-50%);padding:14px 26px;background:linear-gradient(135deg,#facc15,#fde047);color:#000;border-radius:40px;font-weight:800;border:none;box-shadow:0 10px 30px rgba(250,204,21,.6);cursor:pointer;}
-
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;justify-content:center;align-items:center;z-index:1000;}
-.modal-box{background:#020617;padding:25px;border-radius:20px;width:90%;max-width:400px;border:1px solid var(--border);}
-.plan{padding:14px;border:1px solid var(--border);border-radius:14px;margin-bottom:12px;}
-.plan button{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:none;font-weight:700;cursor:pointer;}
-
-/* Subdomain Styling */
-.subdomain-item {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  margin: 8px 0;
-  transition: all 0.3s;
+:root {
+  --bg: #0b0f1a;
+  --card: #111827;
+  --border: #1f2937;
+  --gold: #facc15;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --purple: #8b5cf6;
+  --orange: #f59e0b;
 }
 
-.subdomain-item:hover {
-  background: rgba(255,255,255,0.08);
-  transform: translateY(-2px);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.subdomain-link {
-  color: var(--blue);
-  text-decoration: none;
-  font-weight: bold;
-  display: block;
-  margin: 5px 0;
-  padding: 8px;
-  background: rgba(59,130,246,0.1);
-  border-radius: 8px;
-  border-left: 3px solid var(--blue);
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #020617, #0f172a, #020617);
+  color: #f8fafc;
+  min-height: 100vh;
+  line-height: 1.6;
 }
 
-.subdomain-link:hover {
-  text-decoration: underline;
-  background: rgba(59,130,246,0.2);
-}
-
-.subdomain-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: bold;
-  margin-right: 8px;
-}
-
-.teacher-badge { background: #3b82f6; }
-.student-badge { background: #10b981; }
-.public-badge { background: #f59e0b; }
-
-.subdomain-form input,
-.subdomain-form select,
-.subdomain-form textarea {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.05);
-  color: white;
-  font-size: 14px;
-}
-
-.subdomain-form button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.btn-create { background: var(--blue); color: white; }
-.btn-cancel { background: #4b5563; color: white; }
-
-/* ALWAYS VISIBLE CARD */
-.always-visible {
-  filter: none !important;
-  opacity: 1 !important;
-  grid-column: span 2 !important;
-}
-.always-visible::after {
-  content: none !important;
-}
-
-/* History Section */
-.history-header {
+/* Header */
+header {
+  padding: 1rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.history-count {
+.school-info h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.domain-badge {
+  font-size: 0.75rem;
   background: var(--blue);
   color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-weight: 600;
 }
 
-#subdomainsList {
-  margin-top: 15px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 5px;
+.plan-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-#subdomainsList::-webkit-scrollbar {
-  width: 5px;
+.plan-badge {
+  background: var(--gold);
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-#subdomainsList::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.05);
-  border-radius: 10px;
+.upgrade-btn {
+  background: linear-gradient(135deg, #facc15, #fde047);
+  color: #000;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.875rem;
 }
 
-#subdomainsList::-webkit-scrollbar-thumb {
+.upgrade-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4);
+}
+
+/* Main Layout */
+.container {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Features Grid */
+.features-section {
+  flex: 1;
+}
+
+.features-header {
+  margin-bottom: 1.5rem;
+}
+
+.features-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 0.5rem;
+}
+
+.features-header p {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.feature-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--blue);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+}
+
+.feature-card.locked {
+  filter: grayscale(0.5);
+  opacity: 0.6;
+}
+
+.feature-card.locked::after {
+  content: "🔒 Upgrade";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 1rem;
+  color: var(--gold);
+}
+
+.feature-card.active {
+  border-color: var(--green);
+  background: linear-gradient(145deg, #1e293b, #064e3b);
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.feature-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #f1f5f9;
+}
+
+.feature-card p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Subdomains Section */
+.subdomains-section {
+  flex: 1;
+  max-width: 500px;
+}
+
+.subdomains-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.subdomains-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.subdomains-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subdomain-count {
   background: var(--blue);
-  border-radius: 10px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 20px;
-  color: #9ca3af;
-}
-
-.empty-state p {
-  margin: 5px 0;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .quick-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .action-btn {
   flex: 1;
-  padding: 8px;
-  border-radius: 8px;
+  padding: 0.75rem;
   border: none;
-  font-size: 12px;
-  font-weight: bold;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
   cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .refresh-btn {
-  background: #10b981;
+  background: var(--green);
   color: white;
+}
+
+.refresh-btn:hover {
+  background: #059669;
+  transform: translateY(-2px);
 }
 
 .delete-all-btn {
-  background: #ef4444;
+  background: var(--red);
   color: white;
 }
 
-#notification {
-  position:fixed; 
-  top:20px; 
-  right:20px; 
-  background:#10b981; 
-  color:white; 
-  padding:15px 20px; 
-  border-radius:10px; 
-  display:none; 
-  z-index:9999; 
-  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+.delete-all-btn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
 }
 
-/* QR Code in List */
-.qr-small {
-  width: 80px;
-  height: 80px;
-  border: 4px solid white;
-  border-radius: 8px;
-  margin: 5px auto;
-  display: block;
+/* Subdomains List */
+.subdomains-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+  margin-bottom: 1.5rem;
 }
 
-.qr-container {
-  text-align: center;
-  margin: 10px 0;
-  padding: 8px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 8px;
+.subdomains-list::-webkit-scrollbar {
+  width: 6px;
 }
 
-.id-display {
-  font-family: monospace;
-  font-size: 10px;
-  color: #93c5fd;
-  background: rgba(0,0,0,0.3);
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin: 5px 0;
-  word-break: break-all;
+.subdomains-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
 }
 
-/* Button Styling */
-.button-primary {
+.subdomains-list::-webkit-scrollbar-thumb {
   background: var(--blue);
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 15px;
+  border-radius: 3px;
+}
+
+.subdomain-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
   transition: all 0.3s;
 }
 
-.button-primary:hover {
-  background: #2563eb;
+.subdomain-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--blue);
   transform: translateY(-2px);
+}
+
+.subdomain-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.subdomain-type {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.type-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.teacher-badge { background: #3b82f6; color: white; }
+.student-badge { background: #10b981; color: white; }
+.public-badge { background: #f59e0b; color: #000; }
+
+.subdomain-name {
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.subdomain-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.subdomain-description {
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.subdomain-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.action-small {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.view-btn {
+  background: var(--blue);
+  color: white;
+}
+
+.view-btn:hover {
+  background: #2563eb;
+}
+
+.copy-btn {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--blue);
+  border: 1px solid var(--blue);
+}
+
+.copy-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+}
+
+.empty-state .icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.create-subdomain-btn {
+  background: linear-gradient(135deg, var(--blue), #1d4ed8);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: auto;
+}
+
+.create-subdomain-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* QR Code in List */
+.qr-container {
+  text-align: center;
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0.75rem;
+}
+
+.qr-small {
+  width: 80px;
+  height: 80px;
+  border: 3px solid white;
+  border-radius: 0.5rem;
+  margin: 0 auto;
+  display: block;
+}
+
+.qr-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* ID Display */
+.id-display {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #93c5fd;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+  word-break: break-all;
+}
+
+/* Modals */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-box {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  padding: 2rem;
+  border-radius: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 0.5rem;
+}
+
+.modal-header p {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.plan-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.plan-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.plan-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-2px);
+}
+
+.plan-card.selected {
+  border-color: var(--gold);
+  background: rgba(250, 204, 21, 0.05);
+}
+
+.plan-card h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 0.5rem;
+}
+
+.plan-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.plan-features {
+  list-style: none;
+  font-size: 0.875rem;
+  color: #cbd5e1;
+}
+
+.plan-features li {
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plan-features li::before {
+  content: "✓";
+  color: var(--green);
+  font-weight: bold;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Notification */
+#notification {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: var(--green);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  display: none;
+  z-index: 9999;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+  }
+  
+  .subdomains-section {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .features-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .plan-section {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>
 </head>
 <body>
+<!-- Header -->
 <header>
-  <h2 id="school-name">🏫 School Dashboard</h2>
-  <div class="plan-badge" id="badge">BASIC</div>
-</header>
-<section class="dashboard" id="dash">
-  <div class="card locked" data-feature="attendance"><h3>Attendance</h3><p>Daily attendance</p></div>
-  <div class="card locked" data-feature="students"><h3>Students</h3><p>Student database</p></div>
-  <div class="card locked" data-feature="reports"><h3>Reports</h3><p>Monthly reports</p></div>
-  <div class="card locked" data-feature="analytics"><h3>Analytics</h3><p>Insights</p></div>
-  <div class="card locked" data-feature="qr"><h3>QR Attendance</h3><p>Scan based</p></div>
-  <div class="card locked" data-feature="export"><h3>Export</h3><p>Excel / PDF</p></div>
-  <div class="card locked" data-feature="teachers"><h3>Teachers</h3><p>Multi teacher</p></div>
-  <div class="card locked" data-feature="settings"><h3>Settings</h3><p>Profile & school</p></div>
+  <div class="school-info">
+    <h1>
+      <span>🏫</span>
+      <span id="school-name">School Dashboard</span>
+      <span class="domain-badge" id="domain-badge">domain</span>
+    </h1>
+  </div>
   
-  <!-- ALWAYS VISIBLE CARD -->
-  <div class="card always-visible" id="manageCard">
-    <div class="history-header">
-      <h3>📁 Manage Subdomains</h3>
-      <span class="history-count" id="subdomainCount">0 Created</span>
+  <div class="plan-section">
+    <div class="plan-badge" id="plan-badge">
+      <span>⭐</span>
+      <span id="plan-text">BASIC</span>
     </div>
-    <p>Create teacher/student/public pages</p>
-    
-    <div class="quick-actions">
-      <button class="action-btn refresh-btn" id="refreshBtn">🔄 Refresh List</button>
-      <button class="action-btn delete-all-btn" id="deleteAllBtn">🗑️ Delete All</button>
+    <button class="upgrade-btn" id="upgradePlanBtn">
+      <span>⚡</span>
+      Upgrade Plan
+    </button>
+  </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="features-header">
+      <h2>📊 Dashboard Features</h2>
+      <p>Manage your school with these powerful tools</p>
     </div>
     
-    <div id="subdomainsList">
-      <div class="empty-state">
-        <p>📭 No subdomains created yet</p>
-        <p style="font-size: 12px;">Create your first subdomain below</p>
+    <div class="features-grid" id="featuresGrid">
+      <!-- Features will be dynamically added -->
+    </div>
+  </section>
+  
+  <!-- Subdomains Section -->
+  <section class="subdomains-section">
+    <div class="subdomains-card">
+      <div class="subdomains-header">
+        <h2>
+          <span>📁</span>
+          Manage Subdomains
+        </h2>
+        <span class="subdomain-count" id="subdomainCount">0 Created</span>
+      </div>
+      
+      <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.875rem;">
+        Create and manage teacher, student, and public dashboards
+      </p>
+      
+      <div class="quick-actions">
+        <button class="action-btn refresh-btn" id="refreshBtn">
+          <span>🔄</span>
+          Refresh List
+        </button>
+        <button class="action-btn delete-all-btn" id="deleteAllBtn">
+          <span>🗑️</span>
+          Delete All
+        </button>
+      </div>
+      
+      <div class="subdomains-list" id="subdomainsList">
+        <!-- Subdomains will be dynamically added -->
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <h3>No Subdomains Yet</h3>
+          <p>Create your first subdomain to get started</p>
+        </div>
+      </div>
+      
+      <button class="create-subdomain-btn" id="createSubdomainBtn">
+        <span>➕</span>
+        Create New Subdomain
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- Upgrade Plan Modal -->
+<div class="modal" id="planModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>⚡ Upgrade Your Plan</h3>
+      <p>Choose the perfect plan for your school</p>
+    </div>
+    
+    <div class="plan-options">
+      <div class="plan-card" data-plan="basic">
+        <h4>Basic</h4>
+        <div class="plan-price">Free</div>
+        <ul class="plan-features">
+          <li>Basic Attendance</li>
+          <li>Student Database</li>
+          <li>5 Subdomains Limit</li>
+          <li>Basic Reports</li>
+        </ul>
+      </div>
+      
+      <div class="plan-card" data-plan="intermediate">
+        <h4>Intermediate</h4>
+        <div class="plan-price">₹499/month</div>
+        <ul class="plan-features">
+          <li>All Basic Features</li>
+          <li>Advanced Reports</li>
+          <li>QR Code Attendance</li>
+          <li>25 Subdomains</li>
+          <li>Analytics Dashboard</li>
+        </ul>
+      </div>
+      
+      <div class="plan-card" data-plan="pro">
+        <h4>Pro</h4>
+        <div class="plan-price">₹999/month</div>
+        <ul class="plan-features">
+          <li>All Intermediate Features</li>
+          <li>Unlimited Subdomains</li>
+          <li>Export Data (Excel/PDF)</li>
+          <li>Multi-Teacher Support</li>
+          <li>Advanced Settings</li>
+          <li>Priority Support</li>
+        </ul>
       </div>
     </div>
     
-    <button class="button-primary" id="createSubdomainBtn">
-      ➕ Create New Subdomain
-    </button>
-  </div>
-</section>
-
-<button class="upgrade" id="upgradePlanBtn">Upgrade Plan</button>
-
-<!-- Plan Upgrade Modal -->
-<div class="modal" id="planModal">
-  <div class="modal-box">
-    <h3>Choose Plan</h3>
-    <div class="plan">
-      <b>Intermediate</b>
-      <p>Reports + Attendance</p>
-      <button id="payIntermediateBtn">Pay ₹499</button>
+    <div class="modal-buttons">
+      <button class="modal-btn btn-primary" id="confirmUpgradeBtn">
+        Upgrade Now
+      </button>
+      <button class="modal-btn btn-secondary" id="cancelPlanBtn">
+        Cancel
+      </button>
     </div>
-    <div class="plan">
-      <b>Pro</b>
-      <p>All features unlocked</p>
-      <button id="payProBtn">Pay ₹999</button>
-    </div>
-    <button class="btn-cancel" id="cancelPlanBtn">Cancel</button>
   </div>
 </div>
 
-<!-- Subdomain Creation Modal -->
+<!-- Create Subdomain Modal -->
 <div class="modal" id="subdomainModal">
   <div class="modal-box">
-    <h3>➕ Create New Subdomain</h3>
+    <div class="modal-header">
+      <h3>➕ Create New Subdomain</h3>
+      <p>Create a dashboard for teachers, students, or public access</p>
+    </div>
+    
     <div class="subdomain-form">
-      <input type="text" id="subdomainName" placeholder="subdomain-name (no spaces)" required>
-      <select id="subdomainType">
-        <option value="teacher">👨‍🏫 Teacher</option>
-        <option value="student">👨‍🎓 Student</option>
-        <option value="public">🌐 Public Page</option>
-      </select>
-      <input type="text" id="displayName" placeholder="Display Name (e.g., John's Class)">
-      <textarea id="subdomainDesc" placeholder="Description" rows="3"></textarea>
-      <button class="btn-create" id="createSubdomainSubmitBtn">🚀 Create Subdomain</button>
-      <button class="btn-cancel" id="cancelSubdomainBtn">Cancel</button>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.875rem;">
+          Subdomain Name
+        </label>
+        <input type="text" id="subdomainName" 
+               placeholder="e.g., johns-class" 
+               style="width: 100%; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-size: 1rem;">
+        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">
+          Only letters and numbers, no spaces
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.875rem;">
+          Type
+        </label>
+        <select id="subdomainType" style="width: 100%; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-size: 1rem;">
+          <option value="teacher">👨‍🏫 Teacher Dashboard</option>
+          <option value="student">👨‍🎓 Student Dashboard</option>
+          <option value="public">🌐 Public Portal</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.875rem;">
+          Display Name
+        </label>
+        <input type="text" id="displayName" 
+               placeholder="e.g., Mr. John's Math Class" 
+               style="width: 100%; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-size: 1rem;">
+      </div>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.875rem;">
+          Description (Optional)
+        </label>
+        <textarea id="subdomainDesc" 
+                  rows="3" 
+                  placeholder="Brief description of this dashboard..."
+                  style="width: 100%; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-size: 1rem; resize: vertical;"></textarea>
+      </div>
+    </div>
+    
+    <div class="modal-buttons">
+      <button class="modal-btn btn-primary" id="createSubdomainSubmitBtn">
+        🚀 Create Subdomain
+      </button>
+      <button class="modal-btn btn-secondary" id="cancelSubdomainBtn">
+        Cancel
+      </button>
     </div>
   </div>
 </div>
 
 <!-- Success Notification -->
-<div id="notification">✅ Subdomain created successfully!</div>
+<div id="notification">✅ Operation completed successfully!</div>
 
 <script>
 // VARIABLES THAT WILL BE REPLACED BY SERVER
@@ -330,20 +875,35 @@ let PLAN = "BASIC";
 let SCHOOL_NAME = "School";
 let MAIN_DOMAIN = "";
 
+// Features configuration
+const FEATURES = [
+  { id: 'attendance', name: 'Attendance', desc: 'Daily attendance tracking', icon: '📋', requires: 'basic' },
+  { id: 'students', name: 'Students', desc: 'Student database management', icon: '👨‍🎓', requires: 'basic' },
+  { id: 'reports', name: 'Reports', desc: 'Monthly reports generation', icon: '📊', requires: 'intermediate' },
+  { id: 'analytics', name: 'Analytics', desc: 'Advanced insights & analytics', icon: '📈', requires: 'intermediate' },
+  { id: 'qr', name: 'QR Attendance', desc: 'Scan-based attendance system', icon: '📱', requires: 'intermediate' },
+  { id: 'export', name: 'Export Data', desc: 'Export to Excel/PDF', icon: '💾', requires: 'pro' },
+  { id: 'teachers', name: 'Teachers', desc: 'Multi-teacher management', icon: '👨‍🏫', requires: 'pro' },
+  { id: 'settings', name: 'Settings', desc: 'Advanced configuration', icon: '⚙️', requires: 'pro' }
+];
+
 // DOM Elements
 const elements = {
   schoolName: document.getElementById('school-name'),
-  badge: document.getElementById('badge'),
+  domainBadge: document.getElementById('domain-badge'),
+  planBadge: document.getElementById('plan-badge'),
+  planText: document.getElementById('plan-text'),
   subdomainCount: document.getElementById('subdomainCount'),
   subdomainsList: document.getElementById('subdomainsList'),
+  featuresGrid: document.getElementById('featuresGrid'),
   
   // Buttons
+  upgradePlanBtn: document.getElementById('upgradePlanBtn'),
   refreshBtn: document.getElementById('refreshBtn'),
   deleteAllBtn: document.getElementById('deleteAllBtn'),
   createSubdomainBtn: document.getElementById('createSubdomainBtn'),
-  upgradePlanBtn: document.getElementById('upgradePlanBtn'),
   
-  // Modal elements
+  // Modals
   planModal: document.getElementById('planModal'),
   subdomainModal: document.getElementById('subdomainModal'),
   
@@ -354,9 +914,9 @@ const elements = {
   subdomainDesc: document.getElementById('subdomainDesc'),
   createSubdomainSubmitBtn: document.getElementById('createSubdomainSubmitBtn'),
   cancelSubdomainBtn: document.getElementById('cancelSubdomainBtn'),
-  payIntermediateBtn: document.getElementById('payIntermediateBtn'),
-  payProBtn: document.getElementById('payProBtn'),
+  confirmUpgradeBtn: document.getElementById('confirmUpgradeBtn'),
   cancelPlanBtn: document.getElementById('cancelPlanBtn'),
+  planCards: document.querySelectorAll('.plan-card'),
   
   // Notification
   notification: document.getElementById('notification')
@@ -382,7 +942,8 @@ function init() {
   extractDomainFromURL();
   
   // Update UI
-  applyPlan();
+  updateDashboardInfo();
+  renderFeatures();
   
   // Setup event listeners
   setupEventListeners();
@@ -392,28 +953,70 @@ function init() {
     if (MAIN_DOMAIN) {
       loadSubdomains();
     } else {
-      console.error("❌ MAIN_DOMAIN is empty!");
-      elements.subdomainCount.textContent = "No Domain";
-      elements.subdomainsList.innerHTML = `
-        <div class="empty-state">
-          <p>⚠️ Domain not detected</p>
-          <p style="font-size: 12px;">URL: ${window.location.pathname}</p>
-          <button onclick="location.reload()" style="margin-top:10px; padding:8px 15px; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">
-            🔄 Refresh Page
-          </button>
-        </div>
-      `;
+      showError("Domain not detected. Please check the URL.");
     }
-  }, 1000);
+  }, 500);
+}
+
+// Update dashboard information
+function updateDashboardInfo() {
+  // Update school name
+  elements.schoolName.textContent = SCHOOL_NAME;
+  
+  // Update domain badge
+  elements.domainBadge.textContent = MAIN_DOMAIN || 'domain';
+  
+  // Update plan badge
+  elements.planText.textContent = PLAN.toUpperCase();
+  
+  // Update plan cards selection
+  elements.planCards.forEach(card => {
+    const plan = card.getAttribute('data-plan');
+    if (plan === PLAN.toLowerCase()) {
+      card.classList.add('selected');
+    } else {
+      card.classList.remove('selected');
+    }
+  });
+}
+
+// Render features grid
+function renderFeatures() {
+  let html = '';
+  
+  FEATURES.forEach(feature => {
+    const isUnlocked = isFeatureUnlocked(feature.requires);
+    const isActive = PLAN.toLowerCase() === feature.requires;
+    
+    html += `
+      <div class="feature-card ${isUnlocked ? '' : 'locked'} ${isActive ? 'active' : ''}" 
+           data-feature="${feature.id}">
+        <div class="feature-icon">${feature.icon}</div>
+        <h3>${feature.name}</h3>
+        <p>${feature.desc}</p>
+        ${!isUnlocked ? `<div style="margin-top: 0.5rem; font-size: 0.75rem; color: #f59e0b;">Requires: ${feature.requires.toUpperCase()}</div>` : ''}
+      </div>
+    `;
+  });
+  
+  elements.featuresGrid.innerHTML = html;
+}
+
+// Check if feature is unlocked
+function isFeatureUnlocked(requiredPlan) {
+  const planLevels = { basic: 1, intermediate: 2, pro: 3 };
+  const currentPlan = PLAN.toLowerCase();
+  
+  return planLevels[currentPlan] >= planLevels[requiredPlan];
 }
 
 // Setup all event listeners
 function setupEventListeners() {
   // Button click events
+  elements.upgradePlanBtn.addEventListener('click', openPlanModal);
   elements.refreshBtn.addEventListener('click', loadSubdomains);
   elements.deleteAllBtn.addEventListener('click', deleteAllSubdomains);
   elements.createSubdomainBtn.addEventListener('click', openSubdomainModal);
-  elements.upgradePlanBtn.addEventListener('click', openPlanModal);
   
   // Form submission
   elements.createSubdomainSubmitBtn.addEventListener('click', createSubdomain);
@@ -422,53 +1025,34 @@ function setupEventListeners() {
   elements.cancelSubdomainBtn.addEventListener('click', closeSubdomainModal);
   elements.cancelPlanBtn.addEventListener('click', closePlanModal);
   
-  // Plan payment buttons
-  elements.payIntermediateBtn.addEventListener('click', () => fakePay('intermediate'));
-  elements.payProBtn.addEventListener('click', () => fakePay('pro'));
+  // Plan selection
+  elements.planCards.forEach(card => {
+    card.addEventListener('click', () => {
+      elements.planCards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const selectedPlan = card.getAttribute('data-plan');
+      elements.confirmUpgradeBtn.textContent = selectedPlan === 'basic' ? 'Select Free Plan' : `Upgrade to ${selectedPlan.toUpperCase()}`;
+    });
+  });
+  
+  // Upgrade confirmation
+  elements.confirmUpgradeBtn.addEventListener('click', () => {
+    const selectedCard = document.querySelector('.plan-card.selected');
+    if (selectedCard) {
+      const selectedPlan = selectedCard.getAttribute('data-plan');
+      fakePay(selectedPlan);
+    }
+  });
   
   // Close modals when clicking outside
   document.addEventListener('click', (e) => {
-    if (e.target === elements.planModal) {
-      closePlanModal();
-    }
-    if (e.target === elements.subdomainModal) {
-      closeSubdomainModal();
-    }
+    if (e.target === elements.planModal) closePlanModal();
+    if (e.target === elements.subdomainModal) closeSubdomainModal();
   });
   
-  // Allow Enter key to submit subdomain form
+  // Enter key to submit subdomain form
   elements.subdomainName.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') createSubdomain();
-  });
-}
-
-function applyPlan() {
-  // Update badge
-  elements.badge.textContent = PLAN.toUpperCase();
-  
-  // Update school name
-  elements.schoolName.textContent = `🏫 ${SCHOOL_NAME} Dashboard`;
-  
-  // Lock all feature cards initially
-  document.querySelectorAll('.card[data-feature]').forEach(card => {
-    card.classList.add("locked");
-  });
-  
-  // Unlock based on plan
-  if (PLAN === "intermediate" || PLAN === "INTERMEDIATE") {
-    unlockFeatures(["attendance", "reports"]);
-  }
-  if (PLAN === "pro" || PLAN === "PRO") {
-    unlockFeatures(["attendance", "reports", "students", "analytics", "qr", "export", "teachers", "settings"]);
-  }
-}
-
-function unlockFeatures(features) {
-  features.forEach(feature => {
-    const card = document.querySelector(`[data-feature="${feature}"]`);
-    if (card) {
-      card.classList.remove("locked");
-    }
   });
 }
 
@@ -483,7 +1067,6 @@ function closePlanModal() {
 
 function openSubdomainModal() {
   elements.subdomainModal.style.display = "flex";
-  // Auto-focus on first input
   setTimeout(() => elements.subdomainName.focus(), 100);
 }
 
@@ -494,11 +1077,13 @@ function closeSubdomainModal() {
   elements.subdomainDesc.value = "";
 }
 
+// Fake payment/upgrade
 function fakePay(plan) {
-  PLAN = plan;
+  PLAN = plan.toUpperCase();
   closePlanModal();
-  applyPlan();
-  showNotification(`🎉 Plan upgraded to ${plan.toUpperCase()}!`, "success");
+  updateDashboardInfo();
+  renderFeatures();
+  showNotification(`🎉 Plan upgraded to ${PLAN}! You now have access to all ${plan} features.`, "success");
 }
 
 // Notification
@@ -510,6 +1095,20 @@ function showNotification(message, type = "success") {
   setTimeout(() => {
     elements.notification.style.display = "none";
   }, 3000);
+}
+
+// Error display
+function showError(message) {
+  elements.subdomainsList.innerHTML = `
+    <div class="empty-state">
+      <div class="icon">⚠️</div>
+      <h3>Error Loading Data</h3>
+      <p>${message}</p>
+      <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: #3b82f6; color: white; border: none; border-radius: 0.75rem; font-weight: 600; cursor: pointer;">
+        🔄 Reload Page
+      </button>
+    </div>
+  `;
 }
 
 // Create Subdomain
@@ -578,15 +1177,16 @@ function loadSubdomains() {
   console.log("📡 Loading subdomains for:", MAIN_DOMAIN);
   
   if (!MAIN_DOMAIN) {
-    console.error("MAIN_DOMAIN is empty!");
-    showNotification("❌ Main domain not set", "error");
+    showError("Main domain not set. Please check the URL.");
     return;
   }
   
   elements.subdomainCount.textContent = "Loading...";
   elements.subdomainsList.innerHTML = `
     <div class="empty-state">
-      <p>⏳ Loading subdomains...</p>
+      <div class="icon">⏳</div>
+      <h3>Loading Subdomains</h3>
+      <p>Please wait while we load your data...</p>
     </div>
   `;
   
@@ -599,12 +1199,7 @@ function loadSubdomains() {
       console.log("📦 Subdomains data:", data);
       
       if (!data.success || data.error) {
-        elements.subdomainsList.innerHTML = `
-          <div class="empty-state">
-            <p>📭 No subdomains found</p>
-            <p style="font-size: 12px;">${data.error || 'Create your first subdomain'}</p>
-          </div>
-        `;
+        showError(data.error || 'Failed to load subdomains');
         elements.subdomainCount.textContent = "0 Created";
         return;
       }
@@ -615,110 +1210,97 @@ function loadSubdomains() {
       if (subdomains.length === 0) {
         elements.subdomainsList.innerHTML = `
           <div class="empty-state">
-            <p>📭 No subdomains created yet</p>
-            <p style="font-size: 12px;">Create your first subdomain below</p>
+            <div class="icon">📭</div>
+            <h3>No Subdomains Yet</h3>
+            <p>Create your first subdomain to get started</p>
           </div>
         `;
         return;
       }
       
       // Display subdomains
-      let html = "";
-      
-      subdomains.forEach((sub, index) => {
-        const badgeClass = `${sub.type}-badge`;
-        const badgeText = sub.type.charAt(0).toUpperCase() + sub.type.slice(1);
-        const createdDate = new Date(sub.createdAt).toLocaleDateString();
-        
-        let icon = "👤";
-        if (sub.type === 'teacher') icon = "👨‍🏫";
-        if (sub.type === 'student') icon = "👨‍🎓";
-        if (sub.type === 'public') icon = "🌐";
-        
-        // Use new fields or fallback to old ones
-        const uniqueId = sub.uniqueId || sub.subdomain;
-        const qrCodeUrl = sub.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId)}`;
-        const fullUrl = sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId;
-        const shortCode = sub.shortCode || uniqueId.substring(0, 8);
-        
-        html += `
-          <div class="subdomain-item">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div>
-                <span class="subdomain-badge ${badgeClass}">${badgeText}</span>
-                <strong>${icon} ${sub.name}</strong>
-                <span style="margin-left: 8px; font-size: 11px; color: #9ca3af;">#${index + 1}</span>
-              </div>
-              <small style="color:#6b7280; font-size: 11px;">${createdDate}</small>
-            </div>
-            
-            ${sub.description ? `
-            <div style="margin: 8px 0; color: #9ca3af; font-size: 13px;">
-              📝 ${sub.description}
-            </div>
-            ` : ''}
-            
-            <!-- QR Code Display -->
-            <div class="qr-container">
-              <img src="${qrCodeUrl}" alt="QR Code" class="qr-small">
-              <div style="font-size: 10px; color: #6b7280; margin-top: 3px;">Scan to open</div>
-            </div>
-            
-            <div class="id-display">
-              <strong>ID:</strong> ${shortCode}
-            </div>
-            
-            <a href="${fullUrl}" target="_blank" class="subdomain-link">
-              🔗 Open ${sub.type} Dashboard
-            </a>
-            
-            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-              <button class="copy-link-btn" data-url="${fullUrl}" style="background:none; border:1px solid #3b82f6; color:#3b82f6; padding:3px 10px; border-radius:5px; font-size:11px; cursor:pointer;">
-                📋 Copy Link
-              </button>
-              <button class="delete-btn" data-id="${uniqueId}" data-name="${sub.name}" style="background:none; border:1px solid #ef4444; color:#ef4444; padding:3px 10px; border-radius:5px; font-size:11px; cursor:pointer;">
-                🗑️ Delete
-              </button>
-            </div>
-          </div>
-        `;
-      });
-      
-      elements.subdomainsList.innerHTML = html;
-      
-      // Add event listeners to dynamically created buttons
-      document.querySelectorAll('.copy-link-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const url = this.getAttribute('data-url');
-          navigator.clipboard.writeText(url).then(() => {
-            showNotification('✅ Link copied to clipboard!', 'success');
-          });
-        });
-      });
-      
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          const name = this.getAttribute('data-name');
-          deleteSubdomain(id, name);
-        });
-      });
+      renderSubdomains(subdomains);
     })
     .catch(error => {
       console.error("❌ Error loading subdomains:", error);
-      elements.subdomainsList.innerHTML = `
-        <div class="empty-state">
-          <p>❌ Error loading subdomains</p>
-          <p style="font-size: 12px;">${error.message}</p>
-        </div>
-      `;
+      showError(error.message);
       elements.subdomainCount.textContent = "Error";
     });
 }
 
+// Render subdomains list
+function renderSubdomains(subdomains) {
+  let html = '';
+  
+  subdomains.forEach((sub, index) => {
+    const badgeClass = `${sub.type}-badge`;
+    const badgeText = sub.type.charAt(0).toUpperCase() + sub.type.slice(1);
+    const createdDate = new Date(sub.createdAt).toLocaleDateString();
+    
+    let icon = "👤";
+    if (sub.type === 'teacher') icon = "👨‍🏫";
+    if (sub.type === 'student') icon = "👨‍🎓";
+    if (sub.type === 'public') icon = "🌐";
+    
+    // Use new fields or fallback to old ones
+    const uniqueId = sub.uniqueId || sub.subdomain;
+    const qrCodeUrl = sub.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId)}`;
+    const fullUrl = sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId;
+    const shortCode = sub.shortCode || uniqueId.substring(0, 8);
+    
+    html += `
+      <div class="subdomain-item">
+        <div class="subdomain-header">
+          <div class="subdomain-type">
+            <span class="type-badge ${badgeClass}">${badgeText}</span>
+            <span class="subdomain-name">${icon} ${sub.name}</span>
+          </div>
+          <span class="subdomain-date">${createdDate}</span>
+        </div>
+        
+        ${sub.description ? `
+        <div class="subdomain-description">
+          📝 ${sub.description}
+        </div>
+        ` : ''}
+        
+        <div class="qr-container">
+          <img src="${qrCodeUrl}" alt="QR Code" class="qr-small">
+          <div class="qr-label">Scan to open</div>
+        </div>
+        
+        <div class="id-display">
+          <strong>ID:</strong> ${shortCode}
+        </div>
+        
+        <div class="subdomain-actions">
+          <button class="action-small view-btn" onclick="window.open('${fullUrl}', '_blank')">
+            <span>👁️</span> View
+          </button>
+          <button class="action-small copy-btn" onclick="copyToClipboard('${fullUrl}')">
+            <span>📋</span> Copy
+          </button>
+          <button class="action-small delete-btn" onclick="deleteSubdomain('${uniqueId}', '${sub.name}')">
+            <span>🗑️</span> Delete
+          </button>
+        </div>
+      </div>
+    `;
+  });
+  
+  elements.subdomainsList.innerHTML = html;
+}
+
+// Copy to clipboard
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showNotification('✅ Link copied to clipboard!', 'success');
+  });
+}
+
 // Delete Subdomain
 function deleteSubdomain(uniqueId, displayName) {
-  if (!confirm(`Delete "${displayName}"?`)) return;
+  if (!confirm(`Are you sure you want to delete "${displayName}"?`)) return;
   
   fetch(`/delete-subdomain/${MAIN_DOMAIN}/${uniqueId}`, {
     method: 'DELETE'
@@ -740,7 +1322,7 @@ function deleteSubdomain(uniqueId, displayName) {
 
 // Delete All Subdomains
 function deleteAllSubdomains() {
-  if (!confirm("Delete ALL subdomains? This cannot be undone!")) return;
+  if (!confirm("⚠️ Are you sure you want to delete ALL subdomains?\n\nThis action cannot be undone!")) return;
   
   fetch(`/delete-all-subdomains/${MAIN_DOMAIN}`, {
     method: 'DELETE'
@@ -760,21 +1342,16 @@ function deleteAllSubdomains() {
   });
 }
 
-// Auto-refresh every 30 seconds
-setInterval(() => {
-  if (MAIN_DOMAIN) {
-    loadSubdomains();
-  }
-}, 30000);
-
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', init);
 
-// Make functions available globally for inline onclick handlers
+// Make functions available globally
 window.openSubdomainModal = openSubdomainModal;
 window.openPlanModal = openPlanModal;
 window.loadSubdomains = loadSubdomains;
 window.deleteAllSubdomains = deleteAllSubdomains;
+window.copyToClipboard = copyToClipboard;
+window.deleteSubdomain = deleteSubdomain;
 </script>
 </body>
 </html>
