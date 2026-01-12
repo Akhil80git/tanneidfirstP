@@ -318,6 +318,81 @@ header {
   margin-bottom: 0.5rem;
 }
 
+.history-qr-section {
+  display: flex;
+  gap: 1rem;
+  margin: 0.75rem 0;
+  align-items: center;
+}
+
+.history-qr-code {
+  width: 80px;
+  height: 80px;
+  border: 3px solid white;
+  border-radius: 0.5rem;
+  background: white;
+  padding: 4px;
+}
+
+.history-link-section {
+  flex: 1;
+}
+
+.history-link-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+
+.history-link {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #93c5fd;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  word-break: break-all;
+  margin-bottom: 0.25rem;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.history-action-btn {
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.history-view-btn {
+  background: var(--blue);
+  color: white;
+}
+
+.history-view-btn:hover {
+  background: #2563eb;
+}
+
+.history-copy-btn {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--blue);
+  border: 1px solid var(--blue);
+}
+
+.history-copy-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
 .history-id {
   font-family: 'Courier New', monospace;
   font-size: 0.75rem;
@@ -326,6 +401,7 @@ header {
   padding: 0.5rem;
   border-radius: 0.5rem;
   word-break: break-all;
+  margin-top: 0.5rem;
 }
 
 .empty-history {
@@ -808,6 +884,15 @@ header {
   .subdomains-section {
     max-width: 100%;
   }
+  
+  .history-qr-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .history-qr-code {
+    align-self: center;
+  }
 }
 
 @media (max-width: 640px) {
@@ -829,6 +914,12 @@ header {
   .nav-section {
     overflow-x: auto;
     white-space: nowrap;
+  }
+  
+  .history-filters {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 0.5rem;
   }
 }
 </style>
@@ -1338,6 +1429,18 @@ function saveLocalHistory() {
   localStorage.setItem(`subdomain_history_${MAIN_DOMAIN}`, JSON.stringify(SUBDOMAIN_HISTORY));
 }
 
+// Generate QR code URL
+function generateQRCodeUrl(url) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(url)}`;
+}
+
+// Generate full URL for subdomain
+function generateFullUrl(subdomain, type, id) {
+  const baseUrl = window.location.origin;
+  const path = id ? `${MAIN_DOMAIN}/${id}` : `${MAIN_DOMAIN}/${subdomain}`;
+  return `${baseUrl}/${path}`;
+}
+
 // Render history list
 function renderHistory() {
   if (SUBDOMAIN_HISTORY.length === 0) {
@@ -1375,6 +1478,9 @@ function renderHistory() {
     if (item.type === 'public') typeIcon = '🌐';
     
     const date = new Date(item.timestamp).toLocaleString();
+    const fullUrl = generateFullUrl(item.subdomain, item.type, item.id);
+    const qrCodeUrl = generateQRCodeUrl(fullUrl);
+    const shortCode = item.id || item.subdomain || 'N/A';
     
     html += `
       <div class="history-item" data-type="${item.type}" data-action="${item.action}">
@@ -1396,8 +1502,26 @@ function renderHistory() {
         </div>
         ` : ''}
         
+        ${item.action === 'create' ? `
+        <div class="history-qr-section">
+          <img src="${qrCodeUrl}" alt="QR Code" class="history-qr-code">
+          <div class="history-link-section">
+            <div class="history-link-label">Scan to open</div>
+            <div class="history-link">${fullUrl}</div>
+            <div class="history-actions">
+              <button class="history-action-btn history-view-btn" onclick="window.open('${fullUrl}', '_blank')">
+                <span>👁️</span> View
+              </button>
+              <button class="history-action-btn history-copy-btn" onclick="copyToClipboard('${fullUrl}')">
+                <span>📋</span> Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+        
         <div class="history-id">
-          <strong>ID:</strong> ${item.id || item.subdomain || 'N/A'}
+          <strong>ID:</strong> ${shortCode}
         </div>
       </div>
     `;
@@ -1560,7 +1684,8 @@ function createSubdomain() {
       closeSubdomainModal();
       
       // Add to history
-      addToHistory('create', subdomain, type, name, description, data.uniqueId || subdomain);
+      const uniqueId = data.uniqueId || subdomain;
+      addToHistory('create', subdomain, type, name, description, uniqueId);
       
       // Reload subdomains list
       setTimeout(() => loadSubdomains(), 500);
@@ -1649,8 +1774,8 @@ function renderSubdomains(subdomains) {
     
     // Use new fields or fallback to old ones
     const uniqueId = sub.uniqueId || sub.subdomain;
-    const qrCodeUrl = sub.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId)}`;
-    const fullUrl = sub.fullUrl || window.location.origin + '/' + MAIN_DOMAIN + '/' + uniqueId;
+    const qrCodeUrl = sub.qrCodeUrl || generateQRCodeUrl(sub.fullUrl || generateFullUrl(sub.subdomain, sub.type, uniqueId));
+    const fullUrl = sub.fullUrl || generateFullUrl(sub.subdomain, sub.type, uniqueId);
     const shortCode = sub.shortCode || uniqueId.substring(0, 8);
     
     html += `
