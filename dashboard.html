@@ -95,6 +95,41 @@ header {
   box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4);
 }
 
+/* Navigation */
+.nav-section {
+  padding: 0.75rem 1.5rem;
+  background: rgba(15, 23, 42, 0.7);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-btn {
+  padding: 0.5rem 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: #cbd5e1;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #e2e8f0;
+}
+
+.nav-btn.active {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+
 /* Main Layout */
 .container {
   display: flex;
@@ -107,6 +142,7 @@ header {
 /* Features Grid */
 .features-section {
   flex: 1;
+  display: block;
 }
 
 .features-header {
@@ -186,6 +222,132 @@ header {
 .feature-card p {
   font-size: 0.75rem;
   color: #94a3b8;
+}
+
+/* History Section */
+.history-section {
+  flex: 1;
+  display: none;
+}
+
+.history-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: #cbd5e1;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-btn.active {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.3s;
+}
+
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--blue);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.history-type {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.history-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.creation-badge { background: var(--green); color: white; }
+.deletion-badge { background: var(--red); color: white; }
+.update-badge { background: var(--orange); color: #000; }
+
+.history-name {
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.history-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.history-details {
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.history-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #93c5fd;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  word-break: break-all;
+}
+
+.empty-history {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+}
+
+.empty-history .icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-history h3 {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+}
+
+.empty-history p {
+  font-size: 0.875rem;
 }
 
 /* Subdomains Section */
@@ -663,6 +825,11 @@ header {
     width: 100%;
     justify-content: space-between;
   }
+  
+  .nav-section {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 }
 </style>
 </head>
@@ -689,10 +856,22 @@ header {
   </div>
 </header>
 
+<!-- Navigation -->
+<nav class="nav-section">
+  <button class="nav-btn active" id="featuresBtn">
+    <span>📊</span>
+    Features
+  </button>
+  <button class="nav-btn" id="historyBtn">
+    <span>📜</span>
+    History
+  </button>
+</nav>
+
 <!-- Main Content -->
 <div class="container">
   <!-- Features Section -->
-  <section class="features-section">
+  <section class="features-section" id="featuresSection">
     <div class="features-header">
       <h2>📊 Dashboard Features</h2>
       <p>Manage your school with these powerful tools</p>
@@ -700,6 +879,32 @@ header {
     
     <div class="features-grid" id="featuresGrid">
       <!-- Features will be dynamically added -->
+    </div>
+  </section>
+  
+  <!-- History Section -->
+  <section class="history-section" id="historySection">
+    <div class="features-header">
+      <h2>📜 Subdomain History</h2>
+      <p>View creation and deletion logs of all subdomains</p>
+    </div>
+    
+    <div class="history-filters" id="historyFilters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="teacher">👨‍🏫 Teacher</button>
+      <button class="filter-btn" data-filter="student">👨‍🎓 Student</button>
+      <button class="filter-btn" data-filter="public">🌐 Public</button>
+      <button class="filter-btn" data-filter="creation">➕ Creation</button>
+      <button class="filter-btn" data-filter="deletion">🗑️ Deletion</button>
+    </div>
+    
+    <div class="history-list" id="historyList">
+      <!-- History items will be dynamically added -->
+      <div class="empty-history">
+        <div class="icon">📜</div>
+        <h3>No History Yet</h3>
+        <p>History will appear here when you create or delete subdomains</p>
+      </div>
     </div>
   </section>
   
@@ -887,6 +1092,9 @@ const FEATURES = [
   { id: 'settings', name: 'Settings', desc: 'Advanced configuration', icon: '⚙️', requires: 'pro' }
 ];
 
+// History storage
+let SUBDOMAIN_HISTORY = [];
+
 // DOM Elements
 const elements = {
   schoolName: document.getElementById('school-name'),
@@ -896,6 +1104,16 @@ const elements = {
   subdomainCount: document.getElementById('subdomainCount'),
   subdomainsList: document.getElementById('subdomainsList'),
   featuresGrid: document.getElementById('featuresGrid'),
+  
+  // Navigation
+  featuresBtn: document.getElementById('featuresBtn'),
+  historyBtn: document.getElementById('historyBtn'),
+  featuresSection: document.getElementById('featuresSection'),
+  historySection: document.getElementById('historySection'),
+  
+  // History elements
+  historyFilters: document.getElementById('historyFilters'),
+  historyList: document.getElementById('historyList'),
   
   // Buttons
   upgradePlanBtn: document.getElementById('upgradePlanBtn'),
@@ -944,6 +1162,7 @@ function init() {
   // Update UI
   updateDashboardInfo();
   renderFeatures();
+  loadHistory();
   
   // Setup event listeners
   setupEventListeners();
@@ -1012,6 +1231,20 @@ function isFeatureUnlocked(requiredPlan) {
 
 // Setup all event listeners
 function setupEventListeners() {
+  // Navigation buttons
+  elements.featuresBtn.addEventListener('click', () => switchSection('features'));
+  elements.historyBtn.addEventListener('click', () => switchSection('history'));
+  
+  // Filter buttons in history
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      const filter = e.target.getAttribute('data-filter');
+      filterHistory(filter);
+    });
+  });
+  
   // Button click events
   elements.upgradePlanBtn.addEventListener('click', openPlanModal);
   elements.refreshBtn.addEventListener('click', loadSubdomains);
@@ -1054,6 +1287,175 @@ function setupEventListeners() {
   elements.subdomainName.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') createSubdomain();
   });
+}
+
+// Switch between features and history sections
+function switchSection(section) {
+  // Update navigation buttons
+  elements.featuresBtn.classList.toggle('active', section === 'features');
+  elements.historyBtn.classList.toggle('active', section === 'history');
+  
+  // Show/hide sections
+  elements.featuresSection.style.display = section === 'features' ? 'block' : 'none';
+  elements.historySection.style.display = section === 'history' ? 'block' : 'none';
+  
+  // Refresh history if switching to history section
+  if (section === 'history') {
+    loadHistory();
+  }
+}
+
+// Load history from server
+function loadHistory() {
+  if (!MAIN_DOMAIN) return;
+  
+  fetch(`/get-history/${MAIN_DOMAIN}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        SUBDOMAIN_HISTORY = data.history || [];
+        renderHistory();
+      }
+    })
+    .catch(error => {
+      console.error("Error loading history:", error);
+      // For demo, use local history if API fails
+      if (SUBDOMAIN_HISTORY.length === 0) {
+        SUBDOMAIN_HISTORY = getLocalHistory();
+        renderHistory();
+      }
+    });
+}
+
+// Get history from localStorage (for demo)
+function getLocalHistory() {
+  const localHistory = localStorage.getItem(`subdomain_history_${MAIN_DOMAIN}`);
+  return localHistory ? JSON.parse(localHistory) : [];
+}
+
+// Save history to localStorage (for demo)
+function saveLocalHistory() {
+  localStorage.setItem(`subdomain_history_${MAIN_DOMAIN}`, JSON.stringify(SUBDOMAIN_HISTORY));
+}
+
+// Render history list
+function renderHistory() {
+  if (SUBDOMAIN_HISTORY.length === 0) {
+    elements.historyList.innerHTML = `
+      <div class="empty-history">
+        <div class="icon">📜</div>
+        <h3>No History Yet</h3>
+        <p>History will appear here when you create or delete subdomains</p>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '';
+  const sortedHistory = [...SUBDOMAIN_HISTORY].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  sortedHistory.forEach(item => {
+    let badgeClass = 'creation-badge';
+    let actionIcon = '➕';
+    let actionText = 'Created';
+    
+    if (item.action === 'delete') {
+      badgeClass = 'deletion-badge';
+      actionIcon = '🗑️';
+      actionText = 'Deleted';
+    } else if (item.action === 'update') {
+      badgeClass = 'update-badge';
+      actionIcon = '✏️';
+      actionText = 'Updated';
+    }
+    
+    let typeIcon = '👤';
+    if (item.type === 'teacher') typeIcon = '👨‍🏫';
+    if (item.type === 'student') typeIcon = '👨‍🎓';
+    if (item.type === 'public') typeIcon = '🌐';
+    
+    const date = new Date(item.timestamp).toLocaleString();
+    
+    html += `
+      <div class="history-item" data-type="${item.type}" data-action="${item.action}">
+        <div class="history-header">
+          <div class="history-type">
+            <span class="history-badge ${badgeClass}">${actionIcon} ${actionText}</span>
+            <span class="history-name">${typeIcon} ${item.name}</span>
+          </div>
+          <span class="history-date">${date}</span>
+        </div>
+        
+        <div class="history-details">
+          ${actionText} ${item.type} dashboard: <strong>${item.name}</strong>
+        </div>
+        
+        ${item.description ? `
+        <div class="history-details" style="font-size: 0.75rem; color: #94a3b8;">
+          📝 ${item.description}
+        </div>
+        ` : ''}
+        
+        <div class="history-id">
+          <strong>ID:</strong> ${item.id || item.subdomain || 'N/A'}
+        </div>
+      </div>
+    `;
+  });
+  
+  elements.historyList.innerHTML = html;
+}
+
+// Filter history by type or action
+function filterHistory(filter) {
+  const items = elements.historyList.querySelectorAll('.history-item');
+  
+  items.forEach(item => {
+    const type = item.getAttribute('data-type');
+    const action = item.getAttribute('data-action');
+    
+    let show = true;
+    
+    if (filter === 'all') {
+      show = true;
+    } else if (filter === 'creation') {
+      show = action === 'create';
+    } else if (filter === 'deletion') {
+      show = action === 'delete';
+    } else if (['teacher', 'student', 'public'].includes(filter)) {
+      show = type === filter;
+    }
+    
+    item.style.display = show ? 'block' : 'none';
+  });
+}
+
+// Add entry to history
+function addToHistory(action, subdomain, type, name, description, id) {
+  const historyEntry = {
+    action: action,
+    subdomain: subdomain,
+    type: type,
+    name: name,
+    description: description,
+    id: id,
+    timestamp: new Date().toISOString()
+  };
+  
+  SUBDOMAIN_HISTORY.unshift(historyEntry);
+  
+  // Keep only last 50 entries
+  if (SUBDOMAIN_HISTORY.length > 50) {
+    SUBDOMAIN_HISTORY = SUBDOMAIN_HISTORY.slice(0, 50);
+  }
+  
+  // Save to localStorage for demo
+  saveLocalHistory();
+  
+  // Update history display if visible
+  if (elements.historySection.style.display === 'block') {
+    renderHistory();
+  }
 }
 
 // Modal Functions
@@ -1156,6 +1558,9 @@ function createSubdomain() {
     } else {
       showNotification("✅ " + data.message, "success");
       closeSubdomainModal();
+      
+      // Add to history
+      addToHistory('create', subdomain, type, name, description, data.uniqueId || subdomain);
       
       // Reload subdomains list
       setTimeout(() => loadSubdomains(), 500);
@@ -1280,7 +1685,7 @@ function renderSubdomains(subdomains) {
           <button class="action-small copy-btn" onclick="copyToClipboard('${fullUrl}')">
             <span>📋</span> Copy
           </button>
-          <button class="action-small delete-btn" onclick="deleteSubdomain('${uniqueId}', '${sub.name}')">
+          <button class="action-small delete-btn" onclick="deleteSubdomain('${uniqueId}', '${sub.name}', '${sub.type}')">
             <span>🗑️</span> Delete
           </button>
         </div>
@@ -1299,7 +1704,7 @@ function copyToClipboard(text) {
 }
 
 // Delete Subdomain
-function deleteSubdomain(uniqueId, displayName) {
+function deleteSubdomain(uniqueId, displayName, type) {
   if (!confirm(`Are you sure you want to delete "${displayName}"?`)) return;
   
   fetch(`/delete-subdomain/${MAIN_DOMAIN}/${uniqueId}`, {
@@ -1309,6 +1714,10 @@ function deleteSubdomain(uniqueId, displayName) {
   .then(data => {
     if (data.success) {
       showNotification("✅ " + data.message, "success");
+      
+      // Add to history
+      addToHistory('delete', uniqueId, type, displayName, '', uniqueId);
+      
       loadSubdomains();
     } else {
       showNotification("❌ " + data.error, "error");
@@ -1331,6 +1740,21 @@ function deleteAllSubdomains() {
   .then(data => {
     if (data.success) {
       showNotification("✅ " + data.message, "success");
+      
+      // Add history entry for bulk deletion
+      const timestamp = new Date().toISOString();
+      const bulkEntry = {
+        action: 'delete',
+        subdomain: 'ALL',
+        type: 'bulk',
+        name: 'All Subdomains',
+        description: 'Bulk deletion of all subdomains',
+        id: 'BULK_DELETE',
+        timestamp: timestamp
+      };
+      SUBDOMAIN_HISTORY.unshift(bulkEntry);
+      saveLocalHistory();
+      
       loadSubdomains();
     } else {
       showNotification("❌ " + data.error, "error");
