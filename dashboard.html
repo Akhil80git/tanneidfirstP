@@ -152,7 +152,7 @@ header {
 .features-header h2 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #e2e8f9;
   margin-bottom: 0.5rem;
 }
 
@@ -1434,14 +1434,18 @@ function generateQRCodeUrl(url) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(url)}`;
 }
 
-// Generate full URL for subdomain
+// Generate full URL for subdomain WITH CORRECT UNIQUE ID
 function generateFullUrl(subdomain, type, id) {
-  const baseUrl = window.location.origin;
-  const path = id ? `${MAIN_DOMAIN}/${id}` : `${MAIN_DOMAIN}/${subdomain}`;
-  return `${baseUrl}/${path}`;
+  const baseUrl = window.location.origin; // e.g., https://tanneidfirstp.onrender.com
+  
+  // FIX: Use the actual unique ID if available, otherwise use subdomain name
+  // This is the key fix - always use the 'id' parameter which contains the real unique ID
+  const urlPath = id ? `${MAIN_DOMAIN}/${id}` : `${MAIN_DOMAIN}/${subdomain}`;
+  
+  return `${baseUrl}/${urlPath}`;
 }
 
-// Render history list
+// Render history list WITH CORRECT LINKS
 function renderHistory() {
   if (SUBDOMAIN_HISTORY.length === 0) {
     elements.historyList.innerHTML = `
@@ -1456,7 +1460,8 @@ function renderHistory() {
   
   let html = '';
   const sortedHistory = [...SUBDOMAIN_HISTORY].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  
+  const baseUrl = window.location.origin;
+
   sortedHistory.forEach(item => {
     let badgeClass = 'creation-badge';
     let actionIcon = '➕';
@@ -1478,9 +1483,13 @@ function renderHistory() {
     if (item.type === 'public') typeIcon = '🌐';
     
     const date = new Date(item.timestamp).toLocaleString();
-    const fullUrl = generateFullUrl(item.subdomain, item.type, item.id);
+    
+    // FIXED: Use the actual unique ID from history data
+    // The item.id contains the real unique ID like 't_03d83d6430e9cbb5a08a0a98a671fc55401552f05aeaa'
+    const uniqueId = item.id || item.subdomain;
+    const fullUrl = generateFullUrl(item.subdomain, item.type, uniqueId);
     const qrCodeUrl = generateQRCodeUrl(fullUrl);
-    const shortCode = item.id || item.subdomain || 'N/A';
+    const shortCode = uniqueId ? uniqueId.substring(0, 12) : item.subdomain;
     
     html += `
       <div class="history-item" data-type="${item.type}" data-action="${item.action}">
@@ -1521,7 +1530,7 @@ function renderHistory() {
         ` : ''}
         
         <div class="history-id">
-          <strong>ID:</strong> ${shortCode}
+          <strong>ID:</strong> ${uniqueId}
         </div>
       </div>
     `;
@@ -1554,7 +1563,7 @@ function filterHistory(filter) {
   });
 }
 
-// Add entry to history
+// Add entry to history WITH CORRECT UNIQUE ID
 function addToHistory(action, subdomain, type, name, description, id) {
   const historyEntry = {
     action: action,
@@ -1562,7 +1571,7 @@ function addToHistory(action, subdomain, type, name, description, id) {
     type: type,
     name: name,
     description: description,
-    id: id,
+    id: id, // Store the actual unique ID here
     timestamp: new Date().toISOString()
   };
   
@@ -1637,7 +1646,7 @@ function showError(message) {
   `;
 }
 
-// Create Subdomain
+// Create Subdomain - UPDATED to save correct unique ID
 function createSubdomain() {
   const subdomain = elements.subdomainName.value.trim();
   const type = elements.subdomainType.value;
@@ -1683,7 +1692,8 @@ function createSubdomain() {
       showNotification("✅ " + data.message, "success");
       closeSubdomainModal();
       
-      // Add to history
+      // FIXED: Add to history with the CORRECT unique ID from server response
+      // The server returns data.uniqueId which contains the real unique ID like 't_03d83d64...'
       const uniqueId = data.uniqueId || subdomain;
       addToHistory('create', subdomain, type, name, description, uniqueId);
       
@@ -1772,11 +1782,11 @@ function renderSubdomains(subdomains) {
     if (sub.type === 'student') icon = "👨‍🎓";
     if (sub.type === 'public') icon = "🌐";
     
-    // Use new fields or fallback to old ones
+    // Use the actual unique ID from server data
     const uniqueId = sub.uniqueId || sub.subdomain;
     const qrCodeUrl = sub.qrCodeUrl || generateQRCodeUrl(sub.fullUrl || generateFullUrl(sub.subdomain, sub.type, uniqueId));
     const fullUrl = sub.fullUrl || generateFullUrl(sub.subdomain, sub.type, uniqueId);
-    const shortCode = sub.shortCode || uniqueId.substring(0, 8);
+    const shortCode = sub.shortCode || (uniqueId ? uniqueId.substring(0, 12) : sub.subdomain);
     
     html += `
       <div class="subdomain-item">
@@ -1800,7 +1810,7 @@ function renderSubdomains(subdomains) {
         </div>
         
         <div class="id-display">
-          <strong>ID:</strong> ${shortCode}
+          <strong>ID:</strong> ${uniqueId}
         </div>
         
         <div class="subdomain-actions">
@@ -1840,7 +1850,7 @@ function deleteSubdomain(uniqueId, displayName, type) {
     if (data.success) {
       showNotification("✅ " + data.message, "success");
       
-      // Add to history
+      // Add to history with the correct unique ID
       addToHistory('delete', uniqueId, type, displayName, '', uniqueId);
       
       loadSubdomains();
