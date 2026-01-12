@@ -1,6 +1,7 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const app = express();
 
 app.use(express.json());
@@ -47,6 +48,19 @@ function writeData(data) {
   } catch (error) {
     console.error("Error writing data:", error);
   }
+}
+
+// Generate 45-digit unique ID
+function generateUniqueId() {
+  // Create 22 bytes = 176 bits, convert to hex = 44 chars
+  // Add one more char to make it 45
+  const id = crypto.randomBytes(22).toString('hex') + 'a';
+  return id.substring(0, 45); // Ensure exactly 45 characters
+}
+
+// Generate QR code URL
+function generateQRCodeUrl(url) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
 }
 
 /* ---------- TEST ENDPOINT ---------- */
@@ -149,27 +163,42 @@ app.post("/create-subdomain", (req, res) => {
       return res.json({ error: "Subdomain already exists" });
     }
     
-    // Add new subdomain
+    // Generate unique ID (45 characters)
+    const uniqueId = generateUniqueId();
+    
+    // Create URL with ID pattern
+    const accessLink = `/${mainDomain}/${type.charAt(0)}_${uniqueId}`;
+    
+    // Get dynamic base URL for QR code generation
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || 
+                   (req.headers.origin && req.headers.origin !== "null" ? req.headers.origin : `http://localhost:${process.env.PORT || 5000}`);
+    
+    const fullUrl = `${baseUrl}${accessLink}`;
+    const qrCodeUrl = generateQRCodeUrl(fullUrl);
+    
+    // Add new subdomain with QR code
     const newSubdomain = {
       subdomain: subdomain.toLowerCase(),
       type,
       name: (name || subdomain).trim(),
       description: (description || "").trim(),
       createdAt: new Date().toISOString(),
-      accessLink: `/${mainDomain}/${subdomain}`
+      uniqueId: uniqueId,
+      accessLink: accessLink,
+      qrCodeUrl: qrCodeUrl,
+      fullUrl: fullUrl,
+      shortCode: `${type.charAt(0)}_${uniqueId.substring(0, 8)}` // For display purposes
     };
     
     data[schoolIndex].subdomains.push(newSubdomain);
     writeData(data);
     
-    // Get dynamic base URL
-    const baseUrl = process.env.RENDER_EXTERNAL_URL || 
-                   (req.headers.origin && req.headers.origin !== "null" ? req.headers.origin : `http://localhost:${process.env.PORT || 5000}`);
-    
     res.json({
       success: true,
       message: `${type} subdomain created successfully!`,
-      accessLink: `${baseUrl}${newSubdomain.accessLink}`,
+      accessLink: fullUrl,
+      qrCodeUrl: qrCodeUrl,
+      shortId: newSubdomain.shortCode,
       subdomain: newSubdomain
     });
     
@@ -210,9 +239,9 @@ app.get("/get-subdomains/:domain", (req, res) => {
 });
 
 /* ---------- DELETE SUBDOMAIN ---------- */
-app.delete("/delete-subdomain/:mainDomain/:subdomain", (req, res) => {
+app.delete("/delete-subdomain/:mainDomain/:uniqueId", (req, res) => {
   try {
-    const { mainDomain, subdomain } = req.params;
+    const { mainDomain, uniqueId } = req.params;
     
     const data = readData();
     const schoolIndex = data.findIndex((d) => d.domain === mainDomain.toLowerCase());
@@ -222,7 +251,7 @@ app.delete("/delete-subdomain/:mainDomain/:subdomain", (req, res) => {
     }
     
     const subdomainIndex = data[schoolIndex].subdomains.findIndex(
-      (s) => s.subdomain === subdomain.toLowerCase()
+      (s) => s.uniqueId === uniqueId
     );
     
     if (subdomainIndex === -1) {
@@ -230,12 +259,13 @@ app.delete("/delete-subdomain/:mainDomain/:subdomain", (req, res) => {
     }
     
     // Remove the subdomain
-    data[schoolIndex].subdomains.splice(subdomainIndex, 1);
+    const deletedSubdomain = data[schoolIndex].subdomains.splice(subdomainIndex, 1)[0];
     writeData(data);
     
     res.json({
       success: true,
-      message: "Subdomain deleted successfully"
+      message: "Subdomain deleted successfully",
+      deleted: deletedSubdomain.name
     });
     
   } catch (error) {
@@ -257,12 +287,13 @@ app.delete("/delete-all-subdomains/:mainDomain", (req, res) => {
     }
     
     // Remove all subdomains
+    const count = data[schoolIndex].subdomains.length;
     data[schoolIndex].subdomains = [];
     writeData(data);
     
     res.json({
       success: true,
-      message: "All subdomains deleted successfully"
+      message: `All subdomains (${count}) deleted successfully`
     });
     
   } catch (error) {
@@ -368,12 +399,12 @@ app.get("/dashboard/:domain", (req, res) => {
   }
 });
 
-/* ---------- SUBDOMAIN PAGES ---------- */
-app.get("/:mainDomain/:subdomain", (req, res) => {
+/* ---------- SUBDOMAIN PAGES (WITH UNIQUE ID) ---------- */
+app.get("/:mainDomain/:subdomainId", (req, res) => {
   try {
-    const { mainDomain, subdomain } = req.params;
+    const { mainDomain, subdomainId } = req.params;
     
-    console.log("🌐 Loading subdomain page:", { mainDomain, subdomain });
+    console.log("🌐 Loading subdomain page:", { mainDomain, subdomainId });
     
     const data = readData();
     const school = data.find((d) => d.domain === mainDomain.toLowerCase());
@@ -385,11 +416,15 @@ app.get("/:mainDomain/:subdomain", (req, res) => {
       `);
     }
     
-    const sub = school.subdomains.find((s) => s.subdomain === subdomain.toLowerCase());
+    // Extract the actual unique ID (remove prefix like t_, s_, p_)
+    const uniqueId = subdomainId.substring(2); // Remove first 2 chars (t_/s_/p_)
+    const typePrefix = subdomainId.charAt(0); // t, s, or p
+    
+    const sub = school.subdomains.find((s) => s.uniqueId === uniqueId);
     if (!sub) {
       return res.send(`
         <!DOCTYPE html>
-        <html><body><h1>Invalid Subdomain</h1></body></html>
+        <html><body><h1>Invalid Subdomain ID</h1></body></html>
       `);
     }
     
@@ -397,8 +432,8 @@ app.get("/:mainDomain/:subdomain", (req, res) => {
     const baseUrl = process.env.RENDER_EXTERNAL_URL || 
                    (req.headers.origin && req.headers.origin !== "null" ? req.headers.origin : `http://localhost:${process.env.PORT || 5000}`);
     
-    const pageUrl = `${baseUrl}/${mainDomain}/${subdomain}`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pageUrl)}`;
+    const pageUrl = `${baseUrl}/${mainDomain}/${typePrefix}_${uniqueId}`;
+    const qrCodeUrl = generateQRCodeUrl(pageUrl);
     
     let dashboardHtml = "";
     
@@ -448,12 +483,15 @@ function getTeacherDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
       .stat-card { background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; text-align: center; }
       .stat-card .number { font-size: 2.5rem; font-weight: bold; margin-bottom: 10px; }
       .qr-section { background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; text-align: center; backdrop-filter: blur(10px); margin-top: 40px; }
-      .qr-section img { width: 150px; height: 150px; border: 10px solid white; border-radius: 10px; margin-bottom: 20px; }
-      .url-display { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 10px; margin: 20px 0; word-break: break-all; font-family: monospace; font-size: 14px; }
+      .qr-section img { width: 180px; height: 180px; border: 10px solid white; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+      .url-display { background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 10px; margin: 20px 0; word-break: break-all; font-family: monospace; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
+      .id-display { background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 12px; color: #93c5fd; }
       button { background: #f59e0b; color: black; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
       button:hover { background: #fbbf24; transform: translateY(-2px); }
       a { color: #f59e0b; text-decoration: none; }
       a:hover { text-decoration: underline; }
+      .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 30px 0; }
+      .info-box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; }
     </style>
   </head>
   <body>
@@ -471,9 +509,24 @@ function getTeacherDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
         <h1>Welcome, ${sub.name}!</h1>
         <p>Manage your classes, attendance, and students from this dashboard</p>
         <div style="display: flex; gap: 10px; justify-content: center;">
-          <button>📚 My Classes</button>
-          <button>📊 Attendance</button>
-          <button>📝 Reports</button>
+          <button onclick="location.href='#classes'">📚 My Classes</button>
+          <button onclick="location.href='#attendance'">📊 Attendance</button>
+          <button onclick="location.href='#reports'">📝 Reports</button>
+        </div>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-box">
+          <h3>📋 Basic Info</h3>
+          <p><strong>School:</strong> ${school.school}</p>
+          <p><strong>Dashboard Type:</strong> Teacher Portal</p>
+          <p><strong>Created:</strong> ${new Date(sub.createdAt).toLocaleDateString()}</p>
+        </div>
+        
+        <div class="info-box">
+          <h3>🔑 Unique ID</h3>
+          <div class="id-display">${sub.uniqueId}</div>
+          <small>45-character secure identifier</small>
         </div>
       </div>
       
@@ -516,17 +569,49 @@ function getTeacherDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
       </div>
       
       <div class="qr-section">
-        <h3>🔗 Share This Dashboard</h3>
+        <h2>🔗 Share This Dashboard</h2>
         <p>Scan QR code to access this dashboard on mobile</p>
         <img src="${qrCodeUrl}" alt="QR Code">
-        <div class="url-display">${pageUrl}</div>
-        <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('Link copied!')">📋 Copy Link</button>
-        <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">Created: ${new Date(sub.createdAt).toLocaleDateString()}</p>
-        <a href="${baseUrl}/dashboard/${school.domain}" style="display: block; margin-top: 20px;">← Back to Main Dashboard</a>
+        
+        <div class="url-display">
+          <strong>URL:</strong><br>
+          ${pageUrl}
+        </div>
+        
+        <div class="id-display">
+          <strong>ID:</strong> ${sub.shortCode}
+        </div>
+        
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+          <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('✅ Link copied to clipboard!')">
+            📋 Copy Link
+          </button>
+          <button onclick="window.print()" style="background: rgba(255,255,255,0.2); color: white;">
+            🖨️ Print QR
+          </button>
+        </div>
+        
+        <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">
+          Created: ${new Date(sub.createdAt).toLocaleDateString()}
+        </p>
+        
+        <a href="${baseUrl}/dashboard/${school.domain}" style="display: block; margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; text-align: center;">
+          ← Back to Main Dashboard
+        </a>
       </div>
     </div>
     
-    <script>console.log("Teacher dashboard loaded for: ${sub.name}");</script>
+    <script>
+      console.log("Teacher dashboard loaded for: ${sub.name}");
+      console.log("Unique ID: ${sub.uniqueId}");
+      console.log("URL: ${pageUrl}");
+      
+      // Auto-copy URL on first load (optional)
+      // setTimeout(() => {
+      //   navigator.clipboard.writeText('${pageUrl}');
+      //   console.log('URL auto-copied to clipboard');
+      // }, 2000);
+    </script>
   </body>
   </html>
   `;
@@ -565,12 +650,15 @@ function getStudentDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
       .card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
       .card h3 { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
       .qr-section { background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; text-align: center; backdrop-filter: blur(10px); margin-top: 40px; }
-      .qr-section img { width: 150px; height: 150px; border: 10px solid white; border-radius: 10px; margin-bottom: 20px; }
-      .url-display { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 10px; margin: 20px 0; word-break: break-all; font-family: monospace; font-size: 14px; }
+      .qr-section img { width: 180px; height: 180px; border: 10px solid white; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+      .url-display { background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 10px; margin: 20px 0; word-break: break-all; font-family: monospace; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
+      .id-display { background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 12px; color: #93c5fd; }
       button { background: #3b82f6; color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
       button:hover { background: #2563eb; transform: translateY(-2px); }
       a { color: #3b82f6; text-decoration: none; }
       a:hover { text-decoration: underline; }
+      .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 30px 0; }
+      .info-box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; }
     </style>
   </head>
   <body>
@@ -588,9 +676,24 @@ function getStudentDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
         <h1>Welcome, ${sub.name}!</h1>
         <p>Access your classes, assignments, grades, and schedule</p>
         <div style="display: flex; gap: 10px; justify-content: center;">
-          <button>📚 My Classes</button>
-          <button>📝 Assignments</button>
-          <button>📊 Grades</button>
+          <button onclick="location.href='#classes'">📚 My Classes</button>
+          <button onclick="location.href='#assignments'">📝 Assignments</button>
+          <button onclick="location.href='#grades'">📊 Grades</button>
+        </div>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-box">
+          <h3>📋 Basic Info</h3>
+          <p><strong>School:</strong> ${school.school}</p>
+          <p><strong>Dashboard Type:</strong> Student Portal</p>
+          <p><strong>Created:</strong> ${new Date(sub.createdAt).toLocaleDateString()}</p>
+        </div>
+        
+        <div class="info-box">
+          <h3>🔑 Unique ID</h3>
+          <div class="id-display">${sub.uniqueId}</div>
+          <small>45-character secure identifier</small>
         </div>
       </div>
       
@@ -661,17 +764,43 @@ function getStudentDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
       </div>
       
       <div class="qr-section">
-        <h3>🔗 Share This Dashboard</h3>
+        <h2>🔗 Share This Dashboard</h2>
         <p>Scan QR code to access this dashboard on mobile</p>
         <img src="${qrCodeUrl}" alt="QR Code">
-        <div class="url-display">${pageUrl}</div>
-        <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('Link copied!')">📋 Copy Link</button>
-        <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">Created: ${new Date(sub.createdAt).toLocaleDateString()}</p>
-        <a href="${baseUrl}/dashboard/${school.domain}" style="display: block; margin-top: 20px;">← Back to Main Dashboard</a>
+        
+        <div class="url-display">
+          <strong>URL:</strong><br>
+          ${pageUrl}
+        </div>
+        
+        <div class="id-display">
+          <strong>ID:</strong> ${sub.shortCode}
+        </div>
+        
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+          <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('✅ Link copied to clipboard!')">
+            📋 Copy Link
+          </button>
+          <button onclick="window.print()" style="background: rgba(255,255,255,0.2); color: white;">
+            🖨️ Print QR
+          </button>
+        </div>
+        
+        <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">
+          Created: ${new Date(sub.createdAt).toLocaleDateString()}
+        </p>
+        
+        <a href="${baseUrl}/dashboard/${school.domain}" style="display: block; margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; text-align: center;">
+          ← Back to Main Dashboard
+        </a>
       </div>
     </div>
     
-    <script>console.log("Student dashboard loaded for: ${sub.name}");</script>
+    <script>
+      console.log("Student dashboard loaded for: ${sub.name}");
+      console.log("Unique ID: ${sub.uniqueId}");
+      console.log("URL: ${pageUrl}");
+    </script>
   </body>
   </html>
   `;
@@ -707,14 +836,17 @@ function getPublicDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
       .contact-form input, .contact-form textarea { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.1); color: white; font-size: 16px; }
       .contact-form textarea { height: 150px; resize: vertical; }
       .qr-section { background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 40px; text-align: center; backdrop-filter: blur(10px); margin-top: 40px; }
-      .qr-section img { width: 150px; height: 150px; border: 10px solid white; border-radius: 10px; margin-bottom: 25px; }
-      .url-display { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 10px; margin: 20px 0; word-break: break-all; font-family: monospace; font-size: 14px; }
+      .qr-section img { width: 180px; height: 180px; border: 10px solid white; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+      .url-display { background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 10px; margin: 20px 0; word-break: break-all; font-family: monospace; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
+      .id-display { background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 12px; color: #93c5fd; }
       button { background: #f59e0b; color: black; border: none; padding: 15px 30px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.3s; }
       button:hover { background: #fbbf24; transform: translateY(-2px); }
       .btn-secondary { background: rgba(255, 255, 255, 0.2); color: white; }
       .btn-secondary:hover { background: rgba(255, 255, 255, 0.3); }
       a { color: #f59e0b; text-decoration: none; }
       a:hover { text-decoration: underline; }
+      .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 30px 0; }
+      .info-box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; }
     </style>
   </head>
   <body>
@@ -732,9 +864,25 @@ function getPublicDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
         <h1>Welcome to ${school.school}</h1>
         <p>${sub.description || 'Official public information portal for students, parents, and visitors'}</p>
         <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
-          <button>📰 Latest News</button>
-          <button class="btn-secondary">📅 Events Calendar</button>
-          <button class="btn-secondary">📞 Contact Us</button>
+          <button onclick="location.href='#news'">📰 Latest News</button>
+          <button class="btn-secondary" onclick="location.href='#events'">📅 Events Calendar</button>
+          <button class="btn-secondary" onclick="location.href='#contact'">📞 Contact Us</button>
+        </div>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-box">
+          <h3>📋 Portal Information</h3>
+          <p><strong>Portal Name:</strong> ${sub.name}</p>
+          <p><strong>School:</strong> ${school.school}</p>
+          <p><strong>Type:</strong> Public Information Portal</p>
+          <p><strong>Created:</strong> ${new Date(sub.createdAt).toLocaleDateString()}</p>
+        </div>
+        
+        <div class="info-box">
+          <h3>🔑 Unique ID</h3>
+          <div class="id-display">${sub.uniqueId}</div>
+          <small>45-character secure identifier</small>
         </div>
       </div>
       
@@ -809,17 +957,40 @@ function getPublicDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
         <h2>🔗 Share This Portal</h2>
         <p>Scan QR code to access this public portal on mobile</p>
         <img src="${qrCodeUrl}" alt="QR Code">
-        <div class="url-display">${pageUrl}</div>
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-          <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('Link copied!')">📋 Copy Link</button>
-          <button class="btn-secondary" onclick="window.print()">🖨️ Print Page</button>
+        
+        <div class="url-display">
+          <strong>URL:</strong><br>
+          ${pageUrl}
         </div>
-        <p style="margin-top: 25px; font-size: 14px; opacity: 0.8;">Portal Created: ${new Date(sub.createdAt).toLocaleDateString()}</p>
-        <a href="${baseUrl}/dashboard/${school.domain}" style="display: block; margin-top: 20px; font-weight: bold;">← Back to School Dashboard</a>
+        
+        <div class="id-display">
+          <strong>ID:</strong> ${sub.shortCode}
+        </div>
+        
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+          <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('✅ Link copied to clipboard!')">
+            📋 Copy Link
+          </button>
+          <button class="btn-secondary" onclick="window.print()">
+            🖨️ Print QR
+          </button>
+        </div>
+        
+        <p style="margin-top: 25px; font-size: 14px; opacity: 0.8;">
+          Portal Created: ${new Date(sub.createdAt).toLocaleDateString()}
+        </p>
+        
+        <a href="${baseUrl}/dashboard/${school.domain}" style="display: block; margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; text-align: center; font-weight: bold;">
+          ← Back to School Dashboard
+        </a>
       </div>
     </div>
     
-    <script>console.log("Public portal loaded for: ${school.school}");</script>
+    <script>
+      console.log("Public portal loaded for: ${school.school}");
+      console.log("Unique ID: ${sub.uniqueId}");
+      console.log("URL: ${pageUrl}");
+    </script>
   </body>
   </html>
   `;
@@ -834,9 +1005,10 @@ function getDefaultDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
     <style>
       body { font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #0f172a; color: white; }
       h1 { color: #3b82f6; }
-      img { margin: 20px 0; border: 5px solid white; border-radius: 10px; }
+      img { margin: 20px 0; border: 5px solid white; border-radius: 10px; width: 200px; height: 200px; }
       button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px; }
       a { color: #f59e0b; text-decoration: none; display: block; margin-top: 20px; }
+      .id-box { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 20px auto; max-width: 600px; word-break: break-all; font-family: monospace; font-size: 12px; }
     </style>
   </head>
   <body>
@@ -844,9 +1016,22 @@ function getDefaultDashboard(school, sub, pageUrl, qrCodeUrl, baseUrl) {
     <p><strong>Type:</strong> ${sub.type}</p>
     <p><strong>School:</strong> ${school.school}</p>
     <p><strong>Description:</strong> ${sub.description || 'No description'}</p>
-    <img src="${qrCodeUrl}" alt="QR Code" width="150" height="150">
+    
+    <h3>🔗 Shareable QR Code</h3>
+    <img src="${qrCodeUrl}" alt="QR Code">
+    
+    <div class="id-box">
+      <strong>Unique ID (45 chars):</strong><br>
+      ${sub.uniqueId}
+    </div>
+    
     <p><strong>URL:</strong> ${pageUrl}</p>
-    <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('Link copied!')">📋 Copy Link</button>
+    
+    <div>
+      <button onclick="navigator.clipboard.writeText('${pageUrl}');alert('✅ Link copied!')">📋 Copy Link</button>
+      <button onclick="window.print()">🖨️ Print QR</button>
+    </div>
+    
     <br>
     <a href="${baseUrl}/dashboard/${school.domain}">← Back to Main Dashboard</a>
   </body>
@@ -977,6 +1162,7 @@ app.listen(PORT, () => {
   console.log(`📊 Admin data: http://localhost:${PORT}/all-data`);
   console.log(`❤️  Health check: http://localhost:${PORT}/health`);
   console.log(`🩺 Test endpoint: http://localhost:${PORT}/test`);
+  console.log(`🔐 Unique ID generation: Active (45 characters)`);
   
   // Check if Data.js exists and is readable
   try {
